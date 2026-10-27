@@ -28,7 +28,7 @@
   /* ---- header ---- */
   header{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 0 14px}
   .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; letter-spacing:-.02em}
-  .brand .mark{width:30px; height:30px; flex:none}
+  .brand .mark{width:28px; height:28px; flex:none}
   .daychip{background:var(--panel2); border:1px solid var(--line); color:var(--ink);
     font-size:.78rem; font-weight:700; padding:4px 12px; border-radius:999px; white-space:nowrap}
 
@@ -38,37 +38,29 @@
     background:linear-gradient(180deg,var(--panel),var(--panel2));
     box-shadow:0 10px 40px -18px rgba(0,0,0,.8);
   }
-  .vs{display:grid; grid-template-columns:1fr 64px 1fr; align-items:stretch}
-  .side{padding:22px 18px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; position:relative}
-  .side .face{width:68px; height:68px; display:grid; place-items:center; font-size:40px; border-radius:50%;
+  .vs{display:grid; grid-template-columns:1fr 64px 1fr; align-items:center; padding:24px 18px 8px}
+  .side{display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center}
+  .facewrap{position:relative}
+  .face{width:68px; height:68px; display:grid; place-items:center; font-size:40px; border-radius:50%;
     border:2px solid var(--line); background:var(--bg)}
-  .side.jason .face{box-shadow:0 0 0 4px rgba(255,107,107,.08)}
-  .side.btc .face{box-shadow:0 0 0 4px rgba(247,147,26,.12)}
+  .face.lead-btc{border-color:var(--green); box-shadow:0 0 0 4px rgba(46,230,168,.16)}
+  .face.lead-jason{border-color:var(--red); box-shadow:0 0 0 4px rgba(255,107,107,.16)}
+  .crown{position:absolute; top:-14px; right:-10px; font-size:24px; line-height:1;
+    display:none; filter:drop-shadow(0 2px 5px rgba(0,0,0,.55)); z-index:2}
+  .crown.show{display:block}
   .side .who{font-weight:800; font-size:1.15rem; letter-spacing:.02em}
   .side .role{font-size:.78rem; color:var(--dim); text-transform:uppercase; letter-spacing:.1em}
-  .side .stance{font-size:.85rem; color:var(--muted); max-width:220px; margin-top:4px}
-  .side .stance b{color:var(--ink)}
-  .mid{display:grid; place-items:center; position:relative}
+  .mid{display:grid; place-items:center}
   .mid .vsbadge{
     font-weight:900; font-size:1.35rem; letter-spacing:.02em; color:var(--ink);
     width:52px; height:52px; display:grid; place-items:center; border-radius:50%;
     background:linear-gradient(180deg,#1a2637,#0d1420); border:2px solid var(--line);
-    box-shadow:0 0 22px rgba(247,147,26,.15); z-index:1;
+    box-shadow:0 0 22px rgba(247,147,26,.15);
   }
-  .win-glow{outline:2px solid var(--green); box-shadow:0 0 26px -4px rgba(46,230,168,.45)}
-
-  .scoreline{border-top:1px solid var(--line); padding:14px 18px; text-align:center;
-    background:var(--panel)}
-  .score{font-size:1.35rem; font-weight:900; letter-spacing:-.01em; font-variant-numeric:tabular-nums}
-  .score .btcword{color:var(--btc)}
-  .score .jword{color:var(--red)}
-  .verdict{display:inline-flex; align-items:center; gap:8px; margin-top:6px; padding:5px 14px;
-    border-radius:999px; font-size:.85rem; font-weight:700}
-  .verdict.bitcoin{background:rgba(46,230,168,.13); color:var(--green)}
-  .verdict.jason{background:rgba(255,107,107,.13); color:var(--red)}
-  .verdict.split{background:rgba(255,196,77,.13); color:var(--amber)}
-  .verdict.none{background:var(--panel2); color:var(--muted)}
-  .verdict-sub{color:var(--dim); font-size:.8rem; margin-top:6px; max-width:560px; margin-left:auto; margin-right:auto}
+  .banner-score{text-align:center; padding:4px 18px 20px; font-size:1.15rem; font-weight:800;
+    letter-spacing:-.01em; font-variant-numeric:tabular-nums}
+  .banner-score .btcword{color:var(--btc)}
+  .banner-score .jword{color:var(--red)}
 
   /* ---- tabs ---- */
   .tabs{display:flex; gap:6px; margin:20px 0 4px; padding:4px; background:var(--panel);
@@ -97,16 +89,15 @@
     background:var(--panel); color:var(--muted); font-size:.9rem}
   .lead b{color:var(--ink)}
 
-  /* ---- bets ---- */
-  .betrow{display:flex; align-items:flex-start; gap:12px; padding:14px 4px; border-bottom:1px solid var(--line)}
-  .betrow:last-child{border-bottom:0}
-  .betrow .pill{flex:none; width:9px; height:9px; border-radius:50%; margin-top:5px}
-  .pill.open{background:var(--dim)} .pill.won{background:var(--green)} .pill.lost{background:var(--red)}
-  .betrow .bname{font-weight:700}
-  .betrow .bmeta{color:var(--dim); font-size:.8rem; margin-top:2px}
-  .betrow .bnote{color:var(--muted); font-size:.86rem; margin-top:4px}
-  .bethead{display:flex; align-items:center; gap:10px; margin-bottom:6px}
+  /* ---- bets (tiles, matching scoreboard) ---- */
+  .bet-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .bethead{display:flex; align-items:center; gap:10px; margin-bottom:10px}
   .bethead .score2{font-weight:800; font-size:1.05rem}
+  .card .dot{width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; vertical-align:1px}
+  .dot.open{background:var(--dim)} .dot.won{background:var(--green)} .dot.lost{background:var(--red)}
+  .card .bname{font-weight:800; font-size:1.05rem; margin:6px 0 2px; letter-spacing:-.01em}
+  .card .bmeta{color:var(--dim); font-size:.78rem}
+  .card .bnote{color:var(--muted); font-size:.82rem; margin-top:6px; line-height:1.5}
 
   /* ---- chart ---- */
   .chartbox{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px 8px 6px}
@@ -131,14 +122,14 @@
   footer a{color:var(--muted)}
 
   @media (max-width:560px){
-    .vs{grid-template-columns:1fr 46px 1fr}
-    .side{padding:18px 10px}
-    .side .face{width:56px; height:56px; font-size:32px}
-    .side .stance{font-size:.78rem}
+    .vs{grid-template-columns:1fr 46px 1fr; padding:18px 10px 6px}
+    .face{width:56px; height:56px; font-size:32px}
+    .crown{font-size:20px}
     .mid .vsbadge{width:40px; height:40px; font-size:1.05rem}
     .big{grid-template-columns:1fr 1fr; gap:10px}
+    .bet-grid{grid-template-columns:1fr}
     .card .v{font-size:1.55rem}
-    .score{font-size:1.15rem}
+    .banner-score{font-size:1.05rem}
     .tab{padding:8px 10px; font-size:.82rem}
   }
 </style>
@@ -147,11 +138,15 @@
 <div class="wrap">
   <header>
     <div class="brand">
-      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
-        <circle cx="16" cy="16" r="15" fill="#f7931a"/>
-        <text x="16" y="22" text-anchor="middle" font-size="17" font-weight="800" fill="#0b0f17" font-family="Arial">B</text>
-        <path d="M11 11.5h7.2a2.6 2.6 0 0 1 0 5.2H11zm0 5.2h8.3a2.6 2.6 0 0 1 0 5.2H11z" fill="#0b0f17"/>
-        <path d="M13.4 8.5v2M13.4 22.5v2M19 8.5v2M19 22.5v2" stroke="#f7931a" stroke-width="1.4"/>
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="31" fill="#f7931a"/>
+        <g fill="#0b0f17">
+          <rect x="19" y="15" width="8" height="34" rx="4"/>
+          <path d="M27 15 h9 a6 6 0 0 1 0 15 h-9 z"/>
+          <path d="M27 34 h10 a6.5 6.5 0 0 1 0 15 h-10 z"/>
+          <rect x="40" y="9" width="5" height="15" rx="2.5"/>
+          <rect x="40" y="40" width="5" height="15" rx="2.5"/>
+        </g>
       </svg>
       Jason vs Bitcoin
     </div>
@@ -162,24 +157,24 @@
   <section class="hero">
     <div class="vs">
       <div class="side jason" id="side-jason">
-        <div class="face">🐻</div>
+        <div class="facewrap">
+          <div class="face" id="face-jason">🐻</div>
+          <span class="crown" id="crown-jason">👑</span>
+        </div>
         <div class="who">JASON</div>
         <div class="role">the bear case</div>
-        <div class="stance" id="stance-jason">…</div>
       </div>
       <div class="mid"><div class="vsbadge">VS</div></div>
       <div class="side btc" id="side-btc">
-        <div class="face" id="face-btc"></div>
+        <div class="facewrap">
+          <div class="face" id="face-btc"></div>
+          <span class="crown" id="crown-btc">👑</span>
+        </div>
         <div class="who" style="color:var(--btc)">BITCOIN</div>
         <div class="role">the asset</div>
-        <div class="stance" id="stance-btc">…</div>
       </div>
     </div>
-    <div class="scoreline">
-      <div class="score" id="score">…</div>
-      <div class="verdict none" id="verdict">…</div>
-      <div class="verdict-sub" id="verdict-sub">…</div>
-    </div>
+    <div class="banner-score" id="score">…</div>
   </section>
 
   <!-- TABS -->
@@ -198,7 +193,7 @@
 
     <section class="view" id="view-bets">
       <div class="bethead"><span class="score2" id="bets-head"></span></div>
-      <div id="bets"></div>
+      <div class="bet-grid" id="bets"></div>
     </section>
 
     <section class="view" id="view-chart">
@@ -230,32 +225,55 @@
   function cls(v){ return v==null ? "" : (v>=0 ? "up" : "down"); }
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
-  var BTC_SVG = '<svg width="68" height="68" viewBox="0 0 68 68" aria-hidden="true"><circle cx="34" cy="34" r="32" fill="#f7931a"/><text x="34" y="46" text-anchor="middle" font-size="36" font-weight="800" fill="#0b0f17" font-family="Arial">B</text><path d="M22 25h15.4a5.6 5.6 0 0 1 0 11.2H22zm0 11.2h17.7a5.6 5.6 0 0 1 0 11.2H22z" fill="#0b0f17"/><path d="M27.5 18.5v5M27.5 46.5v5M40.5 18.5v5M40.5 46.5v5" stroke="#f7931a" stroke-width="2.6"/></svg>';
+  var BTC_SVG = '<svg width="68" height="68" viewBox="0 0 64 64" aria-hidden="true">'+
+    '<circle cx="32" cy="32" r="31" fill="#f7931a"/>'+
+    '<g fill="#0b0f17">'+
+    '<rect x="19" y="15" width="8" height="34" rx="4"/>'+
+    '<path d="M27 15 h9 a6 6 0 0 1 0 15 h-9 z"/>'+
+    '<path d="M27 34 h10 a6.5 6.5 0 0 1 0 15 h-10 z"/>'+
+    '<rect x="40" y="9" width="5" height="15" rx="2.5"/>'+
+    '<rect x="40" y="40" width="5" height="15" rx="2.5"/>'+
+    '</g></svg>';
+
+  function timeAgo(iso){
+    var t = Date.parse(iso);
+    if(isNaN(t)) return "recently";
+    var days = Math.floor((Date.now()-t)/86400000);
+    if(days <= 0) return "today";
+    if(days === 1) return "1 day ago";
+    return days + " days ago";
+  }
+
+  function leader(standing){
+    if(standing === "both behind BTC") return "btc";
+    if(standing === "both ahead of BTC") return "jason";
+    return null;
+  }
 
   function render(d){
     var m = d.meta;
     document.title = "Jason vs Bitcoin — day " + m.day_of;
-
     $("daychip").textContent = "Day " + m.day_of + " of " + m.total_days;
     $("face-btc").innerHTML = BTC_SVG;
 
-    $("stance-jason").innerHTML =
-      '<b>“QQQ &amp; top AI will beat BTC”</b><br>+ “Bitcoin won’t break its ATH again.”';
-    $("stance-btc").innerHTML =
-      'Record high <b>'+fmtMoney(m.baselines.record_high,0)+'</b> · live <b>'+fmtMoney(d.scoreboard.btc.price,0)+'</b>';
-
-    var c = d.bets.counts || {won:0,lost:0,open:0};
+    // integrated score (no "open" count)
+    var c = d.bets.counts || {won:0,lost:0};
     $("score").innerHTML =
-      '<span class="jword">Jason '+c.won+'</span> — <span class="btcword">'+c.lost+' Bitcoin</span> · '+c.open+' open';
+      '<span class="jword">Jason '+c.won+'</span> — <span class="btcword">'+c.lost+' Bitcoin</span>';
 
-    var v = verdict(d.standing);
-    var vel = $("verdict");
-    vel.className = "verdict " + v.cls;
-    vel.textContent = v.text;
-    $("verdict-sub").textContent = v.sub;
-    if(v.cls === "bitcoin"){ $("side-btc").classList.add("win-glow"); }
-    else if(v.cls === "jason"){ $("side-jason").classList.add("win-glow"); }
+    // leading indicator (crown + ring), no text
+    var lead = leader(d.standing);
+    if(lead === "btc"){
+      $("crown-btc").classList.add("show");
+      $("crown-btc").setAttribute("title", "Bitcoin is ahead");
+      $("face-btc").classList.add("lead-btc");
+    } else if(lead === "jason"){
+      $("crown-jason").classList.add("show");
+      $("crown-jason").setAttribute("title", "Jason is ahead");
+      $("face-jason").classList.add("lead-jason");
+    }
 
+    // scoreboard tiles
     var sb = d.scoreboard;
     $("cards").innerHTML =
       card("Bitcoin", sb.btc.price, sb.btc.ret_pct, null, true) +
@@ -267,14 +285,9 @@
       "<b>The call:</b> Jason needs <b>both</b> QQQ <i>and</i> the AI basket to beat BTC at the 12/24/36-month marks. " +
       "Nothing settles until 2027–2029 — this is the live read, not a verdict.";
 
+    // bets as tiles
     $("bets-head").textContent = d.bets.headline || "";
-    $("bets").innerHTML = (d.bets.rows||[]).map(function(b){
-      return '<div class="betrow">'+
-        '<span class="pill '+esc(b.status)+'"></span>'+
-        '<div><div class="bname">'+esc(b.name)+'</div>'+
-        '<div class="bmeta">resolves '+esc(b.resolves)+'</div>'+
-        '<div class="bnote">'+esc(b.note)+'</div></div></div>';
-    }).join("");
+    $("bets").innerHTML = (d.bets.rows||[]).map(betCard).join("");
 
     drawChart(d.chart);
 
@@ -298,17 +311,8 @@
     $("about-notes").innerHTML = notes.length ? '<p style="color:var(--dim);font-size:.8rem">⚠️ '+esc(notes.join(" · "))+'</p>' : '';
 
     $("footer").innerHTML =
-      esc(d.disclaimer)+" · Updated "+esc(m.generated_at)+" UTC · "+
+      esc(d.disclaimer)+" · Updated "+timeAgo(m.generated_at)+" · "+
       '<a href="'+esc(m.tweet_url)+'" target="_blank" rel="noopener">source</a>';
-  }
-
-  function verdict(standing){
-    switch(standing){
-      case "both behind BTC": return {cls:"bitcoin", text:"Bitcoin is ahead", sub:"Jason needs QQQ + the AI basket to beat BTC — today they’re both behind. (Not settled until 2027–2029.)"};
-      case "both ahead of BTC": return {cls:"jason", text:"Jason is ahead", sub:"QQQ and the AI basket are both beating BTC so far. (Not settled until 2027–2029.)"};
-      case "split": return {cls:"split", text:"Split decision", sub:"One leg ahead of BTC, one behind."};
-      default: return {cls:"none", text:"No score yet", sub:"Waiting for close data."};
-    }
   }
 
   function card(name, price, ret, gap, isBtc, ai){
@@ -324,6 +328,16 @@
       '<div class="d '+cls(ret)+'">'+fmtPct(ret)+'</div>'+
       (gap!=null?'<div class="gap">'+fmtSigned(gap)+' vs BTC</div>':'')+
       extra+'</div>';
+  }
+
+  function betCard(b){
+    var st = b.status || "open";
+    return '<div class="card">'+
+      '<div class="k"><span class="dot '+esc(st)+'"></span>'+esc(st.toUpperCase())+'</div>'+
+      '<div class="bname">'+esc(b.name)+'</div>'+
+      '<div class="bmeta">resolves '+esc(b.resolves)+'</div>'+
+      '<div class="bnote">'+esc(b.note)+'</div>'+
+      '</div>';
   }
 
   function drawChart(c){
