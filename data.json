@@ -5,10 +5,10 @@
   "tweet_url": "https://x.com/Jason/status/2102051827671871601",
   "tweet2_url": "https://x.com/jason/status/2114956980674605075",
   "ref_url": "https://x.com/AlexesNakamoto/status/2115053956355231814",
-  "as_of": "2026-10-27",
-  "day_of": 36,
+  "as_of": "2026-10-28",
+  "day_of": 37,
   "total_days": 1095,
-  "generated_at": "2026-10-27T18:14:22Z",
+  "generated_at": "2026-10-28T03:38:55Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both behind BTC",
  "scoreboard": {
   "btc": {
-   "price": 80473.0,
-   "ret_pct": -0.86
+   "price": 81047.0,
+   "ret_pct": -0.15
   },
   "qqq": {
-   "price": 720.55,
-   "ret_pct": -2.82,
-   "behind_btc_pct": -1.96
+   "price": 721.25,
+   "ret_pct": -2.73,
+   "behind_btc_pct": -2.58
   },
   "ai": {
-   "ret_pct": -6.75,
-   "behind_btc_pct": -5.89,
+   "ret_pct": -5.18,
+   "behind_btc_pct": -5.02,
    "basket": [
     "NVDA",
     "MSFT",
@@ -44,21 +44,21 @@
     "SPCX"
    ],
    "parts": {
-    "NVDA": -5.005,
-    "MSFT": 6.178,
-    "GOOGL": -10.753,
-    "AMZN": -3.622,
-    "META": -14.933,
-    "AVGO": -9.235,
-    "AMD": -13.686,
-    "TSM": -4.666,
-    "SPCX": -3.26
+    "NVDA": -4.152,
+    "MSFT": 5.925,
+    "GOOGL": -9.688,
+    "AMZN": -2.07,
+    "META": -16.332,
+    "AVGO": -5.606,
+    "AMD": -8.978,
+    "TSM": -1.858,
+    "SPCX": -2.153
    }
   },
   "mags": {
-   "price": 70.7,
-   "ret_pct": -3.11,
-   "behind_btc_pct": -2.25
+   "price": 71.46,
+   "ret_pct": -2.07,
+   "behind_btc_pct": -1.92
   }
  },
  "bets": {
@@ -75,7 +75,7 @@
     "kind": "horizon",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "the AI basket 5.89% behind BTC",
+    "note": "the AI basket 5.02% behind BTC",
     "leg": "12"
    },
    {
@@ -83,7 +83,7 @@
     "kind": "horizon",
     "resolves": "2028-09-21",
     "status": "open",
-    "note": "the AI basket 5.89% behind BTC",
+    "note": "the AI basket 5.02% behind BTC",
     "leg": "24"
    },
    {
@@ -91,7 +91,7 @@
     "kind": "horizon",
     "resolves": "2029-09-21",
     "status": "open",
-    "note": "the AI basket 5.89% behind BTC",
+    "note": "the AI basket 5.02% behind BTC",
     "leg": "36"
    },
    {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 36.2% below $126,080 · 329 days left",
+    "note": "BTC 35.7% below $126,080 · 328 days left",
     "leg": null
    },
    {
@@ -107,7 +107,7 @@
     "kind": "57k",
     "resolves": "2027-10-27",
     "status": "open",
-    "note": "BTC 41% above $57,000 · 365 days left",
+    "note": "BTC 42% above $57,000 · 364 days left",
     "leg": null
    },
    {
@@ -122,20 +122,20 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 80473.0,
-  "below_pct": 36.17,
-  "below_usd": 45607.0,
+  "btc": 81047.0,
+  "below_pct": 35.72,
+  "below_usd": 45033.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
   },
-  "days_left": 329
+  "days_left": 328
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 80473.0,
-  "above_pct": 41.2,
-  "days_left": 365
+  "btc": 81047.0,
+  "above_pct": 42.2,
+  "days_left": 364
  },
  "cpi": {
   "yoy_pct": 3.72,
@@ -181,7 +181,8 @@
    "2026-10-24",
    "2026-10-25",
    "2026-10-26",
-   "2026-10-27"
+   "2026-10-27",
+   "2026-10-28"
   ],
   "btc": [
    -0.0,
@@ -220,46 +221,48 @@
    -0.082,
    -0.442,
    -1.38,
-   -0.834
+   -1.404,
+   -0.145
   ],
   "qqq": [
+   0.0,
+   0.808,
+   -0.035,
+   -0.05,
+   0.409,
    null,
    null,
+   -0.666,
+   -0.477,
+   -0.229,
+   0.076,
+   1.094,
    null,
    null,
+   1.987,
+   2.453,
+   2.193,
+   0.824,
+   1.322,
    null,
    null,
+   0.616,
+   0.283,
+   -1.689,
+   -1.817,
+   -4.271,
    null,
    null,
+   -3.117,
+   -3.215,
+   -2.194,
+   -4.99,
+   -5.0,
    null,
    null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   null,
-   -2.821
+   -3.948,
+   -2.727,
+   null
   ],
   "ai": [
    -0.0,
@@ -298,11 +301,10 @@
    null,
    null,
    -6.748,
+   -5.175,
    null
   ]
  },
- "notes": [
-  "QQQ price is a real-time quote (Nasdaq historical feed was down on this run)."
- ],
+ "notes": [],
  "disclaimer": "Tracked in the open. Equity legs are total return (dividends reinvested); verdicts stay nominal."
 }
