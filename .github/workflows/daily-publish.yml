@@ -1,0 +1,34 @@
+name: daily-publish
+
+on:
+  schedule:
+    # 13:50 UTC daily (7:50 AM Utah) — after the local monitor's own run.
+    - cron: '50 13 * * *'
+  workflow_dispatch: {}   # manual trigger from the Actions tab
+
+permissions:
+  contents: write         # push data.json back to main
+
+concurrency:
+  group: daily-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # jason_claim_monitor.py uses only the stdlib (urllib), so no pip install.
+      - name: Generate and push data.json
+        run: python scripts/jason_web_publish.py
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
