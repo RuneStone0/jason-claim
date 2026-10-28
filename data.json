@@ -8,7 +8,7 @@
   "as_of": "2026-10-28",
   "day_of": 37,
   "total_days": 1095,
-  "generated_at": "2026-10-28T03:38:55Z",
+  "generated_at": "2026-10-28T03:50:58Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both behind BTC",
  "scoreboard": {
   "btc": {
-   "price": 81047.0,
-   "ret_pct": -0.15
+   "price": 81080.0,
+   "ret_pct": -0.11
   },
   "qqq": {
    "price": 721.25,
    "ret_pct": -2.73,
-   "behind_btc_pct": -2.58
+   "behind_btc_pct": -2.62
   },
   "ai": {
    "ret_pct": -5.18,
-   "behind_btc_pct": -5.02,
+   "behind_btc_pct": -5.07,
    "basket": [
     "NVDA",
     "MSFT",
@@ -58,7 +58,7 @@
   "mags": {
    "price": 71.46,
    "ret_pct": -2.07,
-   "behind_btc_pct": -1.92
+   "behind_btc_pct": -1.96
   }
  },
  "bets": {
@@ -75,7 +75,7 @@
     "kind": "horizon",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "the AI basket 5.02% behind BTC",
+    "note": "the AI basket 5.07% behind BTC",
     "leg": "12"
    },
    {
@@ -83,7 +83,7 @@
     "kind": "horizon",
     "resolves": "2028-09-21",
     "status": "open",
-    "note": "the AI basket 5.02% behind BTC",
+    "note": "the AI basket 5.07% behind BTC",
     "leg": "24"
    },
    {
@@ -91,7 +91,7 @@
     "kind": "horizon",
     "resolves": "2029-09-21",
     "status": "open",
-    "note": "the AI basket 5.02% behind BTC",
+    "note": "the AI basket 5.07% behind BTC",
     "leg": "36"
    },
    {
@@ -122,9 +122,9 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 81047.0,
-  "below_pct": 35.72,
-  "below_usd": 45033.0,
+  "btc": 81080.0,
+  "below_pct": 35.69,
+  "below_usd": 45000.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
@@ -133,7 +133,7 @@
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 81047.0,
+  "btc": 81080.0,
   "above_pct": 42.2,
   "days_left": 364
  },
@@ -222,7 +222,7 @@
    -0.442,
    -1.38,
    -1.404,
-   -0.145
+   -0.104
   ],
   "qqq": [
    0.0,
