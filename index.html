@@ -67,8 +67,16 @@
     background:linear-gradient(180deg,#1a2637,#0d1420); border:2px solid var(--line);
     box-shadow:0 0 22px rgba(247,147,26,.15);
   }
-  .banner-score{text-align:center; padding:4px 18px 20px; font-size:1.15rem; font-weight:800;
-    letter-spacing:-.01em; font-variant-numeric:tabular-nums}
+  /* Scorebug: a contained pill so the tally reads as a score, not as stray text with a dash.
+     Numerals are tabular and min-width'd so 0-0 and 10-12 occupy the same footprint — the
+     element doesn't reflow as results land. */
+  .banner-score{display:flex; justify-content:center; padding:6px 18px 22px}
+  .banner-score .sc{display:inline-flex; align-items:center; gap:20px; padding:10px 30px;
+    border-radius:999px; background:var(--panel2); border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.35)}
+  .banner-score .num{min-width:1.35em; text-align:center; font-size:2rem; line-height:1;
+    font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+  .banner-score .sep{display:block; width:1px; height:28px; background:var(--line)}
   .banner-score .btcword{color:var(--btc)}
   .banner-score .jword{color:var(--red)}
 
@@ -140,7 +148,9 @@
     .big{grid-template-columns:1fr 1fr; gap:10px}
     .bet-grid{grid-template-columns:1fr}
     .card .v{font-size:1.55rem}
-    .banner-score{font-size:1.05rem}
+    .banner-score .num{font-size:1.6rem}
+    .banner-score .sc{gap:15px; padding:9px 22px}
+    .banner-score .sep{height:22px}
     .tab{padding:8px 10px; font-size:.82rem}
   }
 </style>
@@ -259,7 +269,9 @@
     // integrated score (no "open" count)
     var c = d.bets.counts || {won:0,lost:0};
     $("score").innerHTML =
-      '<span class="jword">'+c.won+'</span> — <span class="btcword">'+c.lost+'</span>';
+      '<span class="sc"><span class="num jword">'+c.won+'</span>'+
+      '<span class="sep"></span>'+
+      '<span class="num btcword">'+c.lost+'</span></span>';
     $("score").setAttribute("title", "Jason "+c.won+" — Bitcoin "+c.lost);
 
     // leading indicator (crown + ring), no text
