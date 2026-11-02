@@ -52,6 +52,7 @@
   .face{width:72px; height:72px; display:grid; place-items:center; font-size:44px; border-radius:50%;
     border:2px solid var(--line); background:var(--bg)}
   .face svg{width:54px; height:54px}
+  .face img{width:100%; height:100%; object-fit:cover; border-radius:50%; display:block}
   .face.lead-btc{background:rgba(46,230,168,.24); border-color:rgba(46,230,168,.28)}
   .face.lead-jason{background:rgba(255,107,107,.24); border-color:rgba(255,107,107,.28)}
   .crown{position:absolute; top:-14px; right:-10px; font-size:24px; line-height:1;
@@ -162,7 +163,7 @@
     <div class="vs">
       <div class="side jason" id="side-jason">
         <div class="facewrap">
-          <div class="face" id="face-jason">🐻</div>
+          <div class="face" id="face-jason"><img src="jason.jpg" alt="Jason Calacanis"></div>
           <span class="crown" id="crown-jason">👑</span>
         </div>
         <div class="who">JASON</div>
@@ -311,7 +312,9 @@
 
     $("footer").innerHTML =
       esc(d.disclaimer)+" · Updated "+timeAgo(m.generated_at)+" · "+
-      '<a href="'+esc(m.tweet_url)+'" target="_blank" rel="noopener">source</a>';
+      '<a href="'+esc(m.tweet_url)+'" target="_blank" rel="noopener">source</a>'+
+      ' · photo <a href="https://commons.wikimedia.org/wiki/File:Jason_Calacanis_(6723612583).jpg" target="_blank" rel="noopener">Christopher Michel</a>, '+
+      '<a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener">CC BY 2.0</a>';
   }
 
   function card(name, price, ret, gap, isBtc, ai){
