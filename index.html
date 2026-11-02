@@ -259,7 +259,8 @@
     // integrated score (no "open" count)
     var c = d.bets.counts || {won:0,lost:0};
     $("score").innerHTML =
-      '<span class="jword">Jason '+c.won+'</span> — <span class="btcword">'+c.lost+' Bitcoin</span>';
+      '<span class="jword">'+c.won+'</span> — <span class="btcword">'+c.lost+'</span>';
+    $("score").setAttribute("title", "Jason "+c.won+" — Bitcoin "+c.lost);
 
     // leading indicator (crown + ring), no text
     var lead = leader(d.standing);
