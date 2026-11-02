@@ -184,14 +184,14 @@
 
   <!-- TABS -->
   <nav class="tabs" id="tabs" role="tablist">
-    <button class="tab active" data-view="scoreboard">Scoreboard</button>
+    <button class="tab" data-view="scoreboard">Scoreboard</button>
     <button class="tab" data-view="bets">The bets</button>
-    <button class="tab" data-view="chart">Chart</button>
+    <button class="tab active" data-view="chart">Chart</button>
     <button class="tab" data-view="about">Details</button>
   </nav>
 
   <main>
-    <section class="view active" id="view-scoreboard">
+    <section class="view" id="view-scoreboard">
       <div class="big" id="cards"></div>
       <div class="lead" id="lead"></div>
     </section>
@@ -201,7 +201,7 @@
       <div class="bet-grid" id="bets"></div>
     </section>
 
-    <section class="view" id="view-chart">
+    <section class="view active" id="view-chart">
       <div class="chartbox">
         <div class="legend" id="legend"></div>
         <svg class="chart" id="chart" viewBox="0 0 600 260" preserveAspectRatio="none" role="img" aria-label="Return since the tweet"></svg>
@@ -387,13 +387,31 @@
     svg.innerHTML = parts.join("");
   }
 
+  // Tabs are deep-linkable: #chart, #bets, #scoreboard, #about. Chart is the default, so a
+  // bare url lands on the most informative view; an empty or unknown hash falls back to it.
+  var VIEWS = ["scoreboard","bets","chart","about"];
+  var DEFAULT_VIEW = "chart";
+
+  function showView(view, push){
+    if(VIEWS.indexOf(view) === -1) view = DEFAULT_VIEW;
+    document.querySelectorAll(".tab").forEach(function(t){
+      t.classList.toggle("active", t.dataset.view === view);
+    });
+    document.querySelectorAll(".view").forEach(function(v){
+      v.classList.toggle("active", v.id === "view-" + view);
+    });
+    if(push && location.hash !== "#" + view){
+      history.pushState(null, "", "#" + view);
+    }
+  }
+
   $("tabs").addEventListener("click", function(e){
     var btn = e.target.closest(".tab"); if(!btn) return;
-    document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
-    document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
-    btn.classList.add("active");
-    $("view-"+btn.dataset.view).classList.add("active");
+    showView(btn.dataset.view, true);
   });
+  window.addEventListener("hashchange", function(){ showView(location.hash.slice(1), false); });
+  window.addEventListener("popstate", function(){ showView(location.hash.slice(1), false); });
+  showView(location.hash.slice(1), false);
 
   fetch('data.json', {cache:'no-store'})
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
