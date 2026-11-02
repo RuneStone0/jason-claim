@@ -143,7 +143,7 @@
     .vs{grid-template-columns:1fr 46px 1fr; padding:18px 10px 6px}
     .face{width:58px; height:58px; font-size:34px}
     .face svg{width:44px; height:44px}
-    .crown{font-size:20px}
+    .crown svg{width:20px; height:20px}
     .mid .vsbadge{width:40px; height:40px; font-size:1.05rem}
     .big{grid-template-columns:1fr 1fr; gap:10px}
     .bet-grid{grid-template-columns:1fr}
@@ -174,7 +174,7 @@
       <div class="side jason" id="side-jason">
         <div class="facewrap">
           <div class="face" id="face-jason"><img src="jason.jpg" alt="Jason Calacanis"></div>
-          <span class="crown" id="crown-jason">👑</span>
+          <span class="crown" id="crown-jason"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.6 18.2 1.2 8.6l5.3 3.7L12 4.6l5.5 7.7 5.3-3.7-1.4 9.6z" fill="#ffc44d" stroke="#8a6412" stroke-width="1.1" stroke-linejoin="round"/><circle cx="12" cy="20.9" r="1.5" fill="#2ee6a8"/></svg></span>
         </div>
         <div class="who">JASON</div>
         <div class="role">the bear case</div>
@@ -183,7 +183,7 @@
       <div class="side btc" id="side-btc">
         <div class="facewrap">
           <div class="face" id="face-btc"></div>
-          <span class="crown" id="crown-btc">👑</span>
+          <span class="crown" id="crown-btc"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.6 18.2 1.2 8.6l5.3 3.7L12 4.6l5.5 7.7 5.3-3.7-1.4 9.6z" fill="#ffc44d" stroke="#8a6412" stroke-width="1.1" stroke-linejoin="round"/><circle cx="12" cy="20.9" r="1.5" fill="#2ee6a8"/></svg></span>
         </div>
         <div class="who" style="color:var(--btc)">BITCOIN</div>
         <div class="role">the asset</div>
@@ -357,7 +357,7 @@
 
   function drawChart(c){
     var svg = $("chart");
-    var W = 600, H = 260, padL = 38, padR = 10, padT = 12, padB = 24;
+    var W = 600, H = 260, padL = 46, padR = 10, padT = 12, padB = 24;
     var dates = c.dates || [];
     var series = {BTC:c.btc, QQQ:c.qqq, AI:c.ai};
     var colors = {BTC:"#f7931a", QQQ:"#5ea8ff", AI:"#2ee6a8"};
