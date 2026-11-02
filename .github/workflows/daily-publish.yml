@@ -28,7 +28,11 @@ jobs:
           python-version: '3.11'
 
       # jason_claim_monitor.py uses only the stdlib (urllib), so no pip install.
-      - name: Generate and push data.json
+      # og.py needs Pillow to draw the Open Graph card.
+      - name: Install Pillow
+        run: python -m pip install --quiet pillow
+
+      - name: Generate and push data.json + og.png
         run: python scripts/jason_web_publish.py
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

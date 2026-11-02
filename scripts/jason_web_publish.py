@@ -208,6 +208,22 @@ def main() -> int:
           f"AI {payload['scoreboard']['ai']['ret_pct']}%, "
           f"BTC {payload['scoreboard']['btc']['ret_pct']}%)")
 
+    # The OG card is what X/iMessage/Slack preview when the link is shared, so it has to track
+    # the data — a stale preview is worse than none. Failure here must not block the publish:
+    # yesterday's og.png is still a truthful card for yesterday, and data.json is the payload
+    # that matters. (Rune, 2026-11-02.)
+    og = os.path.join(checkout, "scripts", "og.py")
+    try:
+        r = subprocess.run([sys.executable, og], capture_output=True, text=True, timeout=180)
+        if r.returncode != 0:
+            print(f"publish: og.png render failed ({(r.stderr or r.stdout).strip()[:200]}) — "
+                  f"keeping the previous card", file=sys.stderr)
+        else:
+            print((r.stdout or "").strip())
+    except Exception as e:                              # noqa: BLE001
+        print(f"publish: og.png render errored ({repr(e)[:160]}) — keeping the previous card",
+              file=sys.stderr)
+
     if dry:
         print("DRY RUN — data.json written, no commit/push")
         return 0
