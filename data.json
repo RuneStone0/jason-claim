@@ -5,10 +5,10 @@
   "tweet_url": "https://x.com/Jason/status/2102051827671871601",
   "tweet2_url": "https://x.com/jason/status/2114956980674605075",
   "ref_url": "https://x.com/AlexesNakamoto/status/2115053956355231814",
-  "as_of": "2026-11-05",
-  "day_of": 45,
+  "as_of": "2026-11-06",
+  "day_of": 46,
   "total_days": 1095,
-  "generated_at": "2026-11-05T20:51:48Z",
+  "generated_at": "2026-11-06T20:07:54Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both behind BTC",
  "scoreboard": {
   "btc": {
-   "price": 76150.0,
-   "ret_pct": -6.18
+   "price": 75819.0,
+   "ret_pct": -6.59
   },
   "qqq": {
-   "price": 691.95,
-   "ret_pct": -6.68,
-   "behind_btc_pct": -0.5
+   "price": 647.05,
+   "ret_pct": -12.73,
+   "behind_btc_pct": -6.14
   },
   "ai": {
-   "ret_pct": -9.84,
-   "behind_btc_pct": -3.65,
+   "ret_pct": -16.83,
+   "behind_btc_pct": -10.24,
    "basket": [
     "NVDA",
     "MSFT",
@@ -44,21 +44,21 @@
     "SPCX"
    ],
    "parts": {
-    "NVDA": -11.984,
-    "MSFT": 10.803,
-    "GOOGL": -18.604,
-    "AMZN": 2.933,
-    "META": -15.008,
-    "AVGO": -10.252,
-    "AMD": -20.591,
-    "TSM": -11.095,
-    "SPCX": -10.491
+    "NVDA": -20.134,
+    "MSFT": 6.842,
+    "GOOGL": -20.396,
+    "AMZN": 0.681,
+    "META": -18.37,
+    "AVGO": -19.613,
+    "AMD": -34.299,
+    "TSM": -20.677,
+    "SPCX": -18.591
    }
   },
   "mags": {
-   "price": 70.28,
-   "ret_pct": -3.69,
-   "behind_btc_pct": 2.5
+   "price": 66.85,
+   "ret_pct": -8.39,
+   "behind_btc_pct": -1.8
   }
  },
  "bets": {
@@ -75,7 +75,7 @@
     "kind": "horizon",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "the AI basket 3.65% behind BTC",
+    "note": "the AI basket 10.24% behind BTC",
     "leg": "12"
    },
    {
@@ -83,7 +83,7 @@
     "kind": "horizon",
     "resolves": "2028-09-21",
     "status": "open",
-    "note": "the AI basket 3.65% behind BTC",
+    "note": "the AI basket 10.24% behind BTC",
     "leg": "24"
    },
    {
@@ -91,7 +91,7 @@
     "kind": "horizon",
     "resolves": "2029-09-21",
     "status": "open",
-    "note": "the AI basket 3.65% behind BTC",
+    "note": "the AI basket 10.24% behind BTC",
     "leg": "36"
    },
    {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 39.6% below $126,080 · 320 days left",
+    "note": "BTC 39.9% below $126,080 · 319 days left",
     "leg": null
    },
    {
@@ -107,7 +107,7 @@
     "kind": "57k",
     "resolves": "2027-10-27",
     "status": "open",
-    "note": "BTC 34% above $57,000 · 356 days left",
+    "note": "BTC 33% above $57,000 · 355 days left",
     "leg": null
    },
    {
@@ -122,20 +122,20 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 76150.0,
-  "below_pct": 39.6,
-  "below_usd": 49930.0,
+  "btc": 75819.0,
+  "below_pct": 39.86,
+  "below_usd": 50261.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
   },
-  "days_left": 320
+  "days_left": 319
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 76150.0,
-  "above_pct": 33.6,
-  "days_left": 356
+  "btc": 75819.0,
+  "above_pct": 33.0,
+  "days_left": 355
  },
  "cpi": {
   "yoy_pct": 3.72,
@@ -190,7 +190,8 @@
    "2026-11-02",
    "2026-11-03",
    "2026-11-04",
-   "2026-11-05"
+   "2026-11-05",
+   "2026-11-06"
   ],
   "btc": [
    -0.0,
@@ -238,7 +239,8 @@
    -3.542,
    -5.494,
    -4.662,
-   -6.148
+   -0.895,
+   -6.581
   ],
   "qqq": [
    0.0,
@@ -286,6 +288,7 @@
    -8.143,
    -7.578,
    -6.679,
+   -12.734,
    null
   ],
   "ai": [
@@ -334,6 +337,7 @@
    -12.596,
    -10.492,
    -9.835,
+   -16.831,
    null
   ]
  },
