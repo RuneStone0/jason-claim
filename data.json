@@ -5,10 +5,10 @@
   "tweet_url": "https://x.com/Jason/status/2102051827671871601",
   "tweet2_url": "https://x.com/jason/status/2114956980674605075",
   "ref_url": "https://x.com/AlexesNakamoto/status/2115053956355231814",
-  "as_of": "2026-11-07",
-  "day_of": 47,
+  "as_of": "2026-11-08",
+  "day_of": 48,
   "total_days": 1095,
-  "generated_at": "2026-11-07T18:22:43Z",
+  "generated_at": "2026-11-08T18:33:06Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both behind BTC",
  "scoreboard": {
   "btc": {
-   "price": 75812.0,
-   "ret_pct": -6.6
+   "price": 75855.0,
+   "ret_pct": -6.55
   },
   "qqq": {
    "price": 656.1,
    "ret_pct": -11.51,
-   "behind_btc_pct": -4.91
+   "behind_btc_pct": -4.97
   },
   "ai": {
    "ret_pct": -14.14,
-   "behind_btc_pct": -7.54,
+   "behind_btc_pct": -7.6,
    "basket": [
     "NVDA",
     "MSFT",
@@ -58,7 +58,7 @@
   "mags": {
    "price": 67.53,
    "ret_pct": -7.46,
-   "behind_btc_pct": -0.86
+   "behind_btc_pct": -0.91
   }
  },
  "bets": {
@@ -75,7 +75,7 @@
     "kind": "horizon",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "the AI basket 7.54% behind BTC",
+    "note": "the AI basket 7.60% behind BTC",
     "leg": "12"
    },
    {
@@ -83,7 +83,7 @@
     "kind": "horizon",
     "resolves": "2028-09-21",
     "status": "open",
-    "note": "the AI basket 7.54% behind BTC",
+    "note": "the AI basket 7.60% behind BTC",
     "leg": "24"
    },
    {
@@ -91,7 +91,7 @@
     "kind": "horizon",
     "resolves": "2029-09-21",
     "status": "open",
-    "note": "the AI basket 7.54% behind BTC",
+    "note": "the AI basket 7.60% behind BTC",
     "leg": "36"
    },
    {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 39.9% below $126,080 · 318 days left",
+    "note": "BTC 39.8% below $126,080 · 317 days left",
     "leg": null
    },
    {
@@ -107,7 +107,7 @@
     "kind": "57k",
     "resolves": "2027-10-27",
     "status": "open",
-    "note": "BTC 33% above $57,000 · 354 days left",
+    "note": "BTC 33% above $57,000 · 353 days left",
     "leg": null
    },
    {
@@ -122,20 +122,20 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 75812.0,
-  "below_pct": 39.87,
-  "below_usd": 50268.0,
+  "btc": 75855.0,
+  "below_pct": 39.84,
+  "below_usd": 50225.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
   },
-  "days_left": 318
+  "days_left": 317
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 75812.0,
-  "above_pct": 33.0,
-  "days_left": 354
+  "btc": 75855.0,
+  "above_pct": 33.1,
+  "days_left": 353
  },
  "cpi": {
   "yoy_pct": 3.72,
@@ -192,7 +192,8 @@
    "2026-11-04",
    "2026-11-05",
    "2026-11-06",
-   "2026-11-07"
+   "2026-11-07",
+   "2026-11-08"
   ],
   "btc": [
    -0.0,
@@ -242,7 +243,8 @@
    -4.662,
    -0.895,
    -6.361,
-   -6.6
+   -6.645,
+   -6.542
   ],
   "qqq": [
    0.0,
@@ -292,6 +294,7 @@
    -6.679,
    -12.734,
    -11.514,
+   null,
    null
   ],
   "ai": [
@@ -342,6 +345,7 @@
    -9.835,
    -16.831,
    -14.144,
+   null,
    null
   ]
  },
