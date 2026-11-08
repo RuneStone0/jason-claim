@@ -36,8 +36,11 @@ and updates daily.
 - Verdicts stay **nominal** (the bet is written in market prices); the CPI note
   is context, never a scoreboard change.
 - Each 12/24/36-month bet needs **both** QQQ *and* the AI basket above BTC at
-  that mark. The record-high and "never break ATH" bets can only be lost early
-  (by a break); "test $57k" can only be won early (by a print at/below $57,000).
+  that mark. "No new record high" is lost early by a break and won if the 12
+  months run out unbroken; "test $57k" can only be won early (by a print
+  at/below $57,000); "never break ATH again" is the permanent version of the
+  record-high call — the same break loses it, it has no expiry, and it can
+  never be won.
 
 ## Not financial advice
 
