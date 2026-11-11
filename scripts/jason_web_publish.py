@@ -126,7 +126,7 @@ def build_payload(snap, legs, bets_, today_d, infl, btc_series) -> dict:
 
     return {
         "meta": {
-            "title": "Jason's tweet claim — tracked in the open",
+            "title": "Jason's tweet claim, tracked in the open",
             "claim_posted": jm.TWEET_DATE,
             "tweet_url": jm.TWEET_URL,
             "tweet2_url": jm.TWEET2_URL,
@@ -176,6 +176,49 @@ def build_payload(snap, legs, bets_, today_d, infl, btc_series) -> dict:
     }
 
 
+def _coverage(chart: dict) -> tuple[dict, int]:
+    """Non-null points per series, and the number of dates."""
+    dates = chart.get("dates") or []
+    return ({k: sum(1 for v in (chart.get(k) or []) if v is not None)
+             for k in ("btc", "qqq", "ai")}, len(dates))
+
+
+def guard_payload(payload: dict, prev_path: str) -> list:
+    """Reasons this payload must NOT be published. Empty list means it is safe.
+
+    Why (2026-11-11): api.nasdaq.com began answering urllib with 403. `nasdaq_closes` swallowed it,
+    the equity series came back empty, and the publisher pushed a page whose QQQ and AI chart lines
+    and entire scoreboard were null for **every** date, with `standing: "no close data yet"`. Nothing
+    failed; the page simply got worse. A publisher needs a floor, not just a happy path: a quarter
+    whose data does not arrive must leave yesterday's truthful page in place and say so.
+    """
+    problems = []
+    cov, ndates = _coverage(payload.get("chart") or {})
+    if ndates == 0:
+        problems.append("chart has no dates")
+    if cov["btc"] == 0:
+        problems.append("BTC series is empty")
+    sb = payload.get("scoreboard") or {}
+    if (sb.get("qqq") or {}).get("price") is None:
+        problems.append("QQQ scoreboard price is null")
+    if (sb.get("ai") or {}).get("ret_pct") is None:
+        problems.append("AI scoreboard return is null")
+    prev = None
+    try:
+        with open(prev_path, encoding="utf-8") as f:
+            prev = json.load(f)
+    except Exception:                                   # noqa: BLE001
+        prev = None
+    if prev:
+        pcov, _ = _coverage(prev.get("chart") or {})
+        for k in ("qqq", "ai"):
+            # A regression, not a level: a short window legitimately has few points, but losing
+            # more than 40 percent of the points we had yesterday is a broken feed, not news.
+            if pcov[k] >= 5 and cov[k] < max(3, int(pcov[k] * 0.6)):
+                problems.append(f"{k} chart coverage fell {pcov[k]} -> {cov[k]} points")
+    return problems
+
+
 def _run(cmd, env, cwd):
     return subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=cwd, timeout=120)
 
@@ -201,6 +244,31 @@ def main() -> int:
     payload = build_payload(snap, legs, b, t, infl, btc_series)
     os.makedirs(checkout, exist_ok=True)
     out = os.path.join(checkout, "data.json")
+
+    # THE FLOOR. Refuse to overwrite a good page with a degraded one, and say why in a place a
+    # person will look. FORCE_PUBLISH=1 is for a deliberate, hand-checked publish only.
+    problems = guard_payload(payload, out)
+    status_path = os.environ.get("PUBLISH_GUARD_STATUS",
+                                 "/opt/data/reports/jason-claim/publish-guard.json")
+    cov, ndates = _coverage(payload.get("chart") or {})
+    status = {"at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+              "as_of": payload["meta"]["as_of"], "dates": ndates, "coverage": cov,
+              "standing": payload.get("standing"), "blocked": bool(problems),
+              "problems": problems, "forced": bool(os.environ.get("FORCE_PUBLISH"))}
+    try:
+        os.makedirs(os.path.dirname(status_path), exist_ok=True)
+        with open(status_path, "w", encoding="utf-8") as f:
+            json.dump(status, f, indent=1)
+    except OSError:
+        pass
+
+    if problems and not os.environ.get("FORCE_PUBLISH"):
+        print("PUBLISH BLOCKED, payload is degraded, data.json left untouched:", file=sys.stderr)
+        for p in problems:
+            print(f"  - {p}", file=sys.stderr)
+        print(f"  guard status: {status_path}", file=sys.stderr)
+        return 2
+
     with open(out, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
     print(f"wrote {out} (as_of {payload['meta']['as_of']}, "
@@ -208,24 +276,41 @@ def main() -> int:
           f"AI {payload['scoreboard']['ai']['ret_pct']}%, "
           f"BTC {payload['scoreboard']['btc']['ret_pct']}%)")
 
+    # The data can be fine and the page still draw the wrong thing, so verify the RENDER, not just
+    # the payload: index.html's own drawChart() is executed against data.json and every series must
+    # produce a line. This is the check that would have caught 2026-11-11 at the source instead of
+    # on Rune's screen.
+    check = os.path.join(checkout, "scripts", "chart_render_check.js")
+    if os.path.exists(check):
+        try:
+            r = subprocess.run(["node", check, checkout], capture_output=True, text=True, timeout=60)
+            print((r.stdout or "").strip())
+            if r.returncode != 0:
+                print("PUBLISH BLOCKED, chart render check failed: "
+                      f"{(r.stderr or r.stdout).strip()[:200]}", file=sys.stderr)
+                _run(["git", "checkout", "--", "data.json"], os.environ, checkout)
+                return 3
+        except Exception as e:                              # noqa: BLE001
+            print(f"publish: render check could not run ({repr(e)[:120]})", file=sys.stderr)
+
     # The OG card is what X/iMessage/Slack preview when the link is shared, so it has to track
-    # the data — a stale preview is worse than none. Failure here must not block the publish:
+    # the data, a stale preview is worse than none. Failure here must not block the publish:
     # yesterday's og.png is still a truthful card for yesterday, and data.json is the payload
     # that matters. (Rune, 2026-11-02.)
     og = os.path.join(checkout, "scripts", "og.py")
     try:
         r = subprocess.run([sys.executable, og], capture_output=True, text=True, timeout=180)
         if r.returncode != 0:
-            print(f"publish: og.png render failed ({(r.stderr or r.stdout).strip()[:200]}) — "
+            print(f"publish: og.png render failed ({(r.stderr or r.stdout).strip()[:200]}), "
                   f"keeping the previous card", file=sys.stderr)
         else:
             print((r.stdout or "").strip())
     except Exception as e:                              # noqa: BLE001
-        print(f"publish: og.png render errored ({repr(e)[:160]}) — keeping the previous card",
+        print(f"publish: og.png render errored ({repr(e)[:160]}), keeping the previous card",
               file=sys.stderr)
 
     if dry:
-        print("DRY RUN — data.json written, no commit/push")
+        print("DRY RUN, data.json written, no commit/push")
         return 0
 
     tok = _gh_token()
@@ -238,7 +323,7 @@ def main() -> int:
     r = _run(["git", "add", "-A"], env, checkout)
     r = _run(["git", "diff", "--cached", "--quiet"], env, checkout)
     if r.returncode == 0:
-        print("no data change — nothing to push")
+        print("no data change, nothing to push")
         return 0
     r = _run(["git", "commit", "-m", f"data: standing {payload['meta']['as_of']} (day {payload['meta']['day_of']})"],
               env, checkout)

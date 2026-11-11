@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Jason's tweet claim — monthly standing report + event alerts.
+"""Jason's tweet claim, monthly standing report + event alerts.
 
 THE CLAIM (x.com/Jason/status/2102051827671871601, posted 2026-09-21 15:06 UTC):
   (A) "90% chance that $QQQ and top AI companies will beat $BTC over the next
       12, 24 and 36 months"
-  (B) "Bitcoin won't break its record high in next 12 months — sideways for a
+  (B) "Bitcoin won't break its record high in next 12 months, sideways for a
       bit more boys"
 
 So there are four checkable legs:
-  A12/A24/A36 — at the 12/24/36-month marks, do QQQ *and* the AI basket have a
+  A12/A24/A36, at the 12/24/36-month marks, do QQQ *and* the AI basket have a
                 higher total return than BTC?   (he needs BOTH to beat BTC)
-  B           — does BTC stay below its record high until 2027-09-21?
+  B          , does BTC stay below its record high until 2027-09-21?
 
 MODES
   --monthly   standing report by email (1st of the month). Idempotent per month.
@@ -25,11 +25,11 @@ TEST HOOKS
 
 DATA SOURCES (all keyless; every one verified live from this host 2026-09-26)
   equities/ETFs : Nasdaq historical API (primary), Yahoo chart (fallback).
-                  Yahoo 429s this host under burst — it is a FALLBACK only.
+                  Yahoo 429s this host under burst, it is a FALLBACK only.
   BTC spot      : CoinGecko simple/price.
   BTC highs     : CoinGecko OHLC 4h candles (7d window) + Kraken daily OHLC
                   (720-day window, the durable one for "has it broken yet").
-  record high   : FROZEN constant — an ATH is only meaningful as of the tweet
+  record high   : FROZEN constant, an ATH is only meaningful as of the tweet
                   date. CoinGecko $126,080.00 intraday 2025-10-06T10:57Z;
                   Kraken daily high the same day $126,198.10 (0.1% apart).
 
@@ -60,7 +60,7 @@ POSTED_BY = "@Jason"
 MILESTONES = [("12", "2027-09-21"), ("24", "2028-09-21"), ("36", "2029-09-21")]
 WINDOW_END_B = "2027-09-21"        # claim B's 12-month window
 
-# ---- Jason's SECOND tweet (2026-10-27) — "A brutal year for Bitcoin…" ----
+# ---- Jason's SECOND tweet (2026-10-27), "A brutal year for Bitcoin…" ----
 TWEET2_ID = "2114956980674605075"
 TWEET2_URL = "https://x.com/jason/status/2114956980674605075"
 TWEET2_DATE = "2026-10-27"          # decoded from the snowflake ID: 05:46:52Z
@@ -82,9 +82,9 @@ WINDOW_END_C = "2027-10-27"         # 12 months after the tweet
 # AI-exposed listed companies. Fixed and documented so the number is
 # reproducible; Rune can change the basket.
 # SPCX added 2026-09-26 on Rune's instruction ("SpaceX ... is now also a part of
-# the AI race with xAI") — SpaceX acquired xAI in Feb 2026 and IPO'd on Nasdaq in
+# the AI race with xAI"), SpaceX acquired xAI in Feb 2026 and IPO'd on Nasdaq in
 # June 2026, so it is a tradeable price, not a private-mark estimate.
-# ⚠️ SPCX is a Nasdaq-100 constituent, so QQQ already holds it — the two lines
+# ⚠️ SPCX is a Nasdaq-100 constituent, so QQQ already holds it, the two lines
 # overlap by design and the report says so.
 AI_BASKET = ["NVDA", "MSFT", "GOOGL", "AMZN", "META", "AVGO", "AMD", "TSM", "SPCX"]
 MAGS = "MAGS"                      # cross-check: mcap-weighted Mag-7 ETF
@@ -101,7 +101,7 @@ CPI_BASE_MONTH = "2026-08"
 CPI_URL_FRED = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL"
 CPI_URL_BLS = ("https://api.bls.gov/publicAPI/v1/timeseries/data/"
                "CUUR0000SA0")
-# M2 (broader money) deliberately NOT tracked — Rune, 2026-09-26: "CPI is enough".
+# M2 (broader money) deliberately NOT tracked, Rune, 2026-09-26: "CPI is enough".
 # It was FRED-only and FRED refuses this host, so it bought nothing but log noise.
 # BTC issuance is a protocol constant, not a forecast: post-April-2024 subsidy
 # is 3.125 BTC per ~10-minute block.
@@ -177,6 +177,15 @@ def save_state(st: dict) -> None:
 
 def http(url: str, timeout: int = 25, tries: int = 3, delay: int = 4,
          headers: dict = None) -> str:
+    """GET a URL as text. urllib first, curl as the fallback.
+
+    Why the fallback (measured 2026-11-11): api.nasdaq.com started answering urllib with
+    **403 Forbidden** from this container while the exact same URL returned 200 to curl. Because
+    `nasdaq_closes` swallowed the error, every equity series came back empty and the published
+    page lost the QQQ and AI chart lines and its whole scoreboard, with no failure anywhere.
+    An HTTP client is not a source: if one client is refused, try the other before declaring the
+    data gone.
+    """
     last = None
     for i in range(tries):
         try:
@@ -185,11 +194,38 @@ def http(url: str, timeout: int = 25, tries: int = 3, delay: int = 4,
             hdr.update(headers or {})
             req = urllib.request.Request(url, headers=hdr)
             with urllib.request.urlopen(req, timeout=timeout) as r:
-                return r.read().decode("utf-8", "replace")
-        except Exception as e:            # noqa: BLE001 — any failure -> retry
+                body = r.read().decode("utf-8", "replace")
+            # An empty 200 is a refusal wearing a success code (Yahoo does this under rate
+            # limiting), and json.loads("") then fails far from the cause. Treat it as failure so
+            # the retry and the curl fallback actually run.
+            if not body.strip():
+                raise ValueError("empty body")
+            head = body.lstrip()[:120].lower()
+            refusal = ("too many requests", "rate limit", "forbidden", "access denied",
+                       "blocked", "unauthorized", "error 1015")
+            if head.startswith(refusal):
+                raise ValueError(f"throttled body: {body.strip()[:40]}")
+            if head.startswith("<!doctype") or head.startswith("<html"):
+                # Another refusal wearing a 200: a bot-wall page. Falling through to curl is the
+                # difference between "the data is gone" and "this client was shown a block page".
+                raise ValueError("html block page")
+            return body
+        except Exception as e:            # noqa: BLE001, any failure -> retry
             last = e
             if i < tries - 1:
                 time.sleep(delay)
+    try:
+        txt = curl_text(url, timeout=timeout)
+        if not txt.strip():
+            raise ValueError("empty curl body")
+        chead = txt.lstrip()[:120].lower()
+        if chead.startswith(("too many requests", "rate limit", "forbidden", "access denied",
+                            "blocked", "unauthorized", "error 1015", "<!doctype", "<html")):
+            raise ValueError(f"curl refusal page: {txt.strip()[:40]}")
+        log(f"http: urllib {type(last).__name__} on {url.split('?')[0][:70]} -> curl OK")
+        return txt
+    except Exception:                     # noqa: BLE001
+        pass
     raise last
 
 
@@ -296,7 +332,7 @@ def fred_monthly(series_id: str) -> dict:
     """{'YYYY-MM': value} from a FRED series CSV.
 
     FRED is served over curl-only from here (urllib gets a connection reset),
-    and it now sometimes refuses curl too — so this is a fallback, not primary.
+    and it now sometimes refuses curl too, so this is a fallback, not primary.
     """
     txt = None
     for fetcher in (curl_text,
@@ -328,7 +364,7 @@ def bls_cpi_monthly(series_id: str = "CUSR0000SA0") -> dict:
 
     CUSR0000SA0 is seasonally adjusted and returns byte-identical values to
     FRED's CPIAUCSL (both 334.131 for 2026-08, verified 2026-09-26), and this
-    host can actually reach api.bls.gov — so BLS is the primary source.
+    host can actually reach api.bls.gov, so BLS is the primary source.
     Missing observations come back as the literal "-": skip them, do not cast.
     """
     d = json.loads(http("https://api.bls.gov/publicAPI/v1/timeseries/data/"
@@ -454,6 +490,11 @@ def nasdaq_closes(syms: list, frm: dt.date, to: dt.date) -> dict:
                 log(f"nasdaq {s}: historical empty -> realtime fallback "
                     f"{list(rt.items())[0]}")
         time.sleep(1.2)
+    missing = [s for s in syms if not out.get(s)]
+    if missing:
+        # Loud on purpose: a silent empty series is how the QQQ and AI chart lines, and the whole
+        # scoreboard, disappeared from the published page with no error anywhere (2026-11-11).
+        log(f"nasdaq_closes: NO DATA for {', '.join(missing)}")
     return out
 
 
@@ -472,8 +513,12 @@ def yahoo_closes(syms: list, rng: str = "3mo") -> dict:
                 if series:
                     out[s] = series
                     break
-            except Exception:         # noqa: BLE001
+                log(f"yahoo {s}: {host} returned no closes")
+            except Exception as e:    # noqa: BLE001
+                log(f"yahoo {s}: {host} failed: {repr(e)[:90]}")
                 time.sleep(6)
+        if s not in out:
+            log(f"yahoo {s}: NO FALLBACK DATA on any host")
         time.sleep(2)
     return out
 
@@ -485,7 +530,7 @@ def parse_dividend_rows(rows: list, upto: str = None) -> list:
 
     Window is (baseline, upto]: ex-dates STRICTLY AFTER the baseline close (QQQ
     went ex on 2026-09-21, the baseline day itself, and that cash went to the
-    previous holder — crediting it would overstate the equity leg) and NOT after
+    previous holder, crediting it would overstate the equity leg) and NOT after
     `upto`. The upper bound matters because the feed also lists *declared future*
     ex-dates: without it, an upcoming dividend is treated as a missing past one
     and raises a false "total return understated" alarm every run.
@@ -521,7 +566,7 @@ def tr_factor(sym: str, divs: list, series: dict, problems: list) -> float:
     """Compounding dividend-reinvestment factor (total return vs price return).
 
     Each dividend is reinvested at that ex-date's close: factor *= (1 + d/px).
-    A missing price is recorded rather than silently dropped — an unstated
+    A missing price is recorded rather than silently dropped, an unstated
     omission here would quietly understate the equity side.
     """
     factor = 1.0
@@ -535,7 +580,7 @@ def tr_factor(sym: str, divs: list, series: dict, problems: list) -> float:
         if px:
             factor *= (1.0 + amt / px)
         else:
-            problems.append(f"{sym}: no close for {ex} dividend ${amt:.4f} — "
+            problems.append(f"{sym}: no close for {ex} dividend ${amt:.4f}, "
                             f"total return slightly understated")
     return factor
 
@@ -544,7 +589,7 @@ def equity_rets(series: dict, divs_map: dict = None, problems: list = None) -> d
     """{sym: (last_date, close, total_return_pct, price_return_pct)}
 
     Total return is the PRIMARY figure (Rune, 2026-09-26: "total return is the
-    fairer comparison") — QQQ alone pays ~0.42%/yr, so price-only quietly
+    fairer comparison"), QQQ alone pays ~0.42%/yr, so price-only quietly
     penalises the equity side of the bet. Price return is kept as the fourth
     element so the report can quote both.
     """
@@ -625,7 +670,7 @@ def build_snapshot(today_d: dt.date, long_window_from: dt.date = None,
                 divs_map[s] = nasdaq_dividends(s, today_d.isoformat())
             except Exception as e:        # noqa: BLE001
                 problems.append(f"{s}: dividend history unavailable "
-                                f"({repr(e)[:60]}) — its return is price-only")
+                                f"({repr(e)[:60]}), its return is price-only")
                 log(f"dividends {s} failed: {repr(e)[:120]}")
             time.sleep(0.6)
     rets = equity_rets(series, divs_map, problems)
@@ -633,7 +678,7 @@ def build_snapshot(today_d: dt.date, long_window_from: dt.date = None,
 
     # BTC: gather every source tolerantly. Kraken is the durable one; CoinGecko
     # is preferred for spot when it answers. A single-source 429 must not kill
-    # the run — BTC data is the whole point of this monitor.
+    # the run, BTC data is the whole point of this monitor.
     highs, kraken_last = {}, None
     try:
         kraken = btc_highs_kraken()
@@ -663,7 +708,7 @@ def build_snapshot(today_d: dt.date, long_window_from: dt.date = None,
     post = {d: h for d, h in highs.items() if d > TWEET_DATE and d <= today_d.isoformat()}
     peak = max(post.items(), key=lambda kv: kv[1]) if post else (None, None)
     if peak[1] is None:
-        problems.append("no BTC high data — peak since the post is unknown this run")
+        problems.append("no BTC high data, peak since the post is unknown this run")
         log("btc source issue: no high data (spot is fine, peak unavailable)")
     btc_ret = (spot / BASE_BTC - 1.0) * 100.0
 
@@ -680,13 +725,13 @@ def build_snapshot(today_d: dt.date, long_window_from: dt.date = None,
     except Exception as e:            # noqa: BLE001
         problems.append(f"coingecko lows: {repr(e)[:80]}")
 
-    # Claim C — lowest print since the second tweet, and whether $57k was tested.
+    # Claim C, lowest print since the second tweet, and whether $57k was tested.
     post_lows = {d: lo for d, lo in lows.items()
                  if d > TWEET2_DATE and d <= today_d.isoformat()}
     lowest = min(post_lows.items(), key=lambda kv: kv[1]) if post_lows else (None, None)
     tested_57k = bool(lowest[1] is not None and lowest[1] <= CLAIM_C_57K)
 
-    # Claim D — has the ATH broken since the SECOND tweet (a separate window)?
+    # Claim D, has the ATH broken since the SECOND tweet (a separate window)?
     post2 = {d: h for d, h in highs.items()
              if d > TWEET2_DATE and d <= today_d.isoformat()}
     peak2 = max(post2.items(), key=lambda kv: kv[1]) if post2 else (None, None)
@@ -775,15 +820,15 @@ def milestone_positions(snap: dict, today_d: dt.date) -> list:
 
 
 def bets(snap: dict, legs: list, today_d: dt.date) -> dict:
-    """Rune: each checkable prediction is ONE bet — SIX across Jason's two tweets.
+    """Rune: each checkable prediction is ONE bet, SIX across Jason's two tweets.
 
-      * 12 / 24 / 36 months (2026-09-21 tweet) — each a bet that BOTH $QQQ and the
+      * 12 / 24 / 36 months (2026-09-21 tweet), each a bet that BOTH $QQQ and the
         top-AI basket beat $BTC by that mark (settles 2027/2028/2029-09-21).
-      * "no new BTC record high in 12 months" (2026-09-21) — lost early by BTC
+      * "no new BTC record high in 12 months" (2026-09-21), lost early by BTC
         actually breaking it, won when the 12 months pass unbroken.
-      * "test the 57k low again in 12 months" (2026-10-27) — won early by BTC
+      * "test the 57k low again in 12 months" (2026-10-27), won early by BTC
         printing at/below $57,000, lost when the 12 months pass without it.
-      * "never break ATH again" (2026-10-27) — permanent, lost early by any break
+      * "never break ATH again" (2026-10-27), permanent, lost early by any break
         after that tweet, never "won" in finite time (only "still holding").
 
     Returns counts plus one row per bet, so every artefact can say "N of 6".
@@ -820,7 +865,7 @@ def bets(snap: dict, legs: list, today_d: dt.date) -> dict:
         pk = snap.get("btc_peak_since") or {}
         status = "lost"
         hi = pk.get("high")
-        note = (f"BTC broke ${ath:,.0f} — high ${hi:,.0f} on {pk.get('date')}"
+        note = (f"BTC broke ${ath:,.0f}, high ${hi:,.0f} on {pk.get('date')}"
                 if hi else f"BTC broke ${ath:,.0f}")
     elif today_d > dt.date.fromisoformat(WINDOW_END_B):
         status = "won"
@@ -833,13 +878,13 @@ def bets(snap: dict, legs: list, today_d: dt.date) -> dict:
                  "resolves": WINDOW_END_B, "status": status, "note": note,
                  "leg": None})
 
-    # Claim C — "test the 57k low again in 12 months" (2026-10-27 tweet).
+    # Claim C, "test the 57k low again in 12 months" (2026-10-27 tweet).
     # Jason WINS if BTC prints at/below $57,000 within the window; LOSES when
     # 12 months pass without it.
     low = snap.get("btc_low_since") or {}
     if snap.get("tested_57k"):
         status = "won"
-        note = (f"BTC printed ${low.get('low'):,.0f} on {low.get('date')} — "
+        note = (f"BTC printed ${low.get('low'):,.0f} on {low.get('date')}, "
                 f"at/below ${CLAIM_C_57K:,.0f}" if low.get("low") is not None
                 else "BTC printed at/below $57,000")
     elif today_d > dt.date.fromisoformat(WINDOW_END_C):
@@ -856,18 +901,18 @@ def bets(snap: dict, legs: list, today_d: dt.date) -> dict:
                  "resolves": WINDOW_END_C, "status": status, "note": note,
                  "leg": None})
 
-    # Claim D — "Bitcoin will never break its all-time high again" (2026-10-27).
+    # Claim D, "Bitcoin will never break its all-time high again" (2026-10-27).
     # Permanent: lost the moment BTC breaks $126,080 after that tweet; never
     # "won" in finite time, only "still holding".
     if snap.get("ath_broken_since2"):
         pk2 = snap.get("btc_peak_since2") or {}
         status = "lost"
         hi = pk2.get("high")
-        note = (f"BTC broke ${BTC_ATH:,.0f} — high ${hi:,.0f} on {pk2.get('date')}"
+        note = (f"BTC broke ${BTC_ATH:,.0f}, high ${hi:,.0f} on {pk2.get('date')}"
                 if hi else f"BTC broke ${BTC_ATH:,.0f}")
     else:
         status = "open"
-        note = f"holds while BTC stays below ${BTC_ATH:,.0f} — no expiry"
+        note = f"holds while BTC stays below ${BTC_ATH:,.0f}, no expiry"
     rows.append({"name": "never break ATH again", "kind": "never_ath",
                  "resolves": "never", "status": status, "note": note,
                  "leg": None})
@@ -894,7 +939,7 @@ def price_ret_of(r):
 def gap_phrase(asset_ret: float, btc_ret: float) -> str:
     """Describe an asset's gap to BTC so it can never be read as BTC's own return.
 
-    The old wording ("vs BTC -4.47%") reversed on the reader — it looked like BTC
+    The old wording ("vs BTC -4.47%") reversed on the reader, it looked like BTC
     was down 4.47% when it was the AI basket trailing by that many points
     (Rune, 2026-09-26). Always name the direction and the unit.
     """
@@ -910,8 +955,8 @@ def _quote(text: str) -> list:
 
 
 def debasement_lines(snap, infl, supply) -> list:
-    """The purchasing-power section — answers Rune's debasement question with numbers."""
-    L = ["## Real terms — what's left after the dollar shrinks"]
+    """The purchasing-power section, answers Rune's debasement question with numbers."""
+    L = ["## Real terms, what's left after the dollar shrinks"]
     if not infl or infl.get("error") or "cum_pct" not in infl:
         L.append("- CPI unavailable this run, so the real-terms block is skipped. The "
                  "nominal figures above are unaffected; it retries next month.")
@@ -929,7 +974,7 @@ def debasement_lines(snap, infl, supply) -> list:
              f"always lags spot by a few weeks).*")
     if not cum_meaningful:
         L.append(f"- **No new CPI print has landed since the claim**, so the "
-                 f"cumulative real-terms adjustment is zero *by construction* — not a "
+                 f"cumulative real-terms adjustment is zero *by construction*, not a "
                  f"finding. The live debasement figure is the 12-month rate above: at "
                  f"**{_f(yoy)}%/yr**, a flat nominal BTC loses that much purchasing "
                  f"power per year.")
@@ -944,7 +989,7 @@ def debasement_lines(snap, infl, supply) -> list:
         L.append(f"- **The answer to your question:** debasement lifts *both* sides, "
                  f"because both are priced in the same dollars. The QQQ-to-BTC gap "
                  f"scales from **{abs(nom_gap):.2f}%** nominal to "
-                 f"**{abs(real_gap):.2f}%** in real terms — it shrinks slightly but "
+                 f"**{abs(real_gap):.2f}%** in real terms, it shrinks slightly but "
                  f"**cannot change sign**, since inflation cancels out of a ratio "
                  f"between two dollar-priced assets. So it raises the bar for what "
                  f"\"sideways\" means; it does not give BTC a head start in *this* bet.")
@@ -960,14 +1005,14 @@ def debasement_lines(snap, infl, supply) -> list:
                      f"the nominal price goes up. \"Sideways\" is a real-terms decline.")
     if supply:
         L.append(f"- **Where a real asymmetry does exist (separate from the unit):** "
-                 f"BTC's supply is fixed — {supply['annual_issuance']:,.0f} new coins/yr "
+                 f"BTC's supply is fixed, {supply['annual_issuance']:,.0f} new coins/yr "
                  f"on {supply['circulating']:,.0f} = **{supply['annual_pct']:.2f}%/yr**, "
                  f"halving in {supply['halving_year']}. An equity index's share count "
                  f"drifts with net issuance vs buybacks, so the *supply* side of the "
                  f"ratio is structurally kinder to BTC. I could not source a clean "
                  f"index-wide dilution figure, so there is deliberately no number for "
                  f"it here rather than a guessed one.")
-    L.append("- The bet as written is in market prices, so **verdicts stay nominal** — "
+    L.append("- The bet as written is in market prices, so **verdicts stay nominal**, "
              "real terms are context, never a scoreboard change.")
     return L
 
@@ -992,7 +1037,7 @@ def render_tweet_draft(snap, legs, today_d, infl) -> tuple:
     # ---- the running score: how many of his 6 bets are settled
     _c = bets(snap, legs, today_d)["counts"]
     if _c["won"] == 0 and _c["lost"] == 0:
-        bscore = f"Score: 0 of {_c['total']} settled — all still open."
+        bscore = f"Score: 0 of {_c['total']} settled, all still open."
     elif _c["open"] == 0:
         bscore = f"Final: {_c['won']} of {_c['total']} won."
     else:
@@ -1000,13 +1045,13 @@ def render_tweet_draft(snap, legs, today_d, infl) -> tuple:
                   f"{_c['open']} open.")
 
     if snap["ath_broken"]:
-        lead = (f"Day {day_n}: $BTC printed ${peak['high']:,.0f} on {peak['date']} — "
+        lead = (f"Day {day_n}: $BTC printed ${peak['high']:,.0f} on {peak['date']}, "
                 f"above the ${BTC_ATH:,.0f} high you said would not break.")
         if today_d > dt.date.fromisoformat(WINDOW_END_B):
             tail = (f"Your 'never break ATH again' call is now lost (the 12-month one "
                     f"had already settled). {bscore}")
         else:
-            tail = (f"Both record-high calls — 12-month and 'never again' — are settled "
+            tail = (f"Both record-high calls, 12-month and 'never again', are settled "
                     f"lost. {bscore}")
     elif decided:
         r = decided[0]
@@ -1046,7 +1091,7 @@ def render_tweet_draft(snap, legs, today_d, infl) -> tuple:
         long_lines.append(
             f"The dollar is losing about {infl['yoy_pct']:.1f}%/yr in purchasing power "
             f"(CPI). That lifts both sides of this comparison equally, so it cannot flip "
-            f"the result — but it does mean \"flat\" in nominal terms is a real decline.")
+            f"the result, but it does mean \"flat\" in nominal terms is a real decline.")
     long_lines.append(f"The marks that settle it: {', '.join(m for _, m in MILESTONES)}.")
     long_lines.append("Not financial advice, and not a prediction of my own.")
     long = "\n".join(long_lines)
@@ -1067,9 +1112,9 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
     both_ahead = bool(qqq and qqq[2] > btc and ai is not None and ai > btc)
 
     L = []
-    L.append(f"Subject: Jason claim — monthly standing (day {day_n} of 1095)")
+    L.append(f"Subject: Jason claim, monthly standing (day {day_n} of 1095)")
     L.append("Kind: jason-claim-standing")
-    L.append(f"# Jason's tweet claim — where it stands")
+    L.append(f"# Jason's tweet claim, where it stands")
     L.append(f"**Report date:** {today_d.isoformat()} · **claim posted:** "
              f"{TWEET_DATE} (day {day_n} of 1095) · [original tweet]({TWEET_URL})")
     L.append(f"> The claim: *\"90% chance that $QQQ and top AI companies will beat "
@@ -1077,37 +1122,37 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
              f"its record high in next 12 months.\"*")
     L.append(f"> **Second tweet ({TWEET2_DATE}):** *\"We will test the 57k low again "
              f"in the next 12 months\"* and *\"Bitcoin will never break its all-time "
-             f"high again\"* — [tweet]({TWEET2_URL}). Jason's bearish track record: "
+             f"high again\"*, [tweet]({TWEET2_URL}). Jason's bearish track record: "
              f"[\"11 years, still waiting for zero\"]({REF_URL}).")
     L.append("---")
     L.append("## Scoreboard since the tweet")
-    L.append(f"- **BTC:** ${spot:,.0f} — **{pct(btc)}** since his post "
+    L.append(f"- **BTC:** ${spot:,.0f}, **{pct(btc)}** since his post "
              f"(from ${BASE_BTC:,.0f})")
     if qqq:
-        L.append(f"- **QQQ:** ${qqq[1]:,.2f} — **{pct(qqq[2])} total return** "
+        L.append(f"- **QQQ:** ${qqq[1]:,.2f}, **{pct(qqq[2])} total return** "
                  f"({pct(price_ret_of(qqq))} price-only) · "
                  f"{gap_phrase(qqq[2], btc)}")
     if ai is not None:
         L.append(f"- **Top AI companies (equal-weight {len(AI_BASKET)}, total "
                  f"return):** **{pct(ai)}** · {gap_phrase(ai, btc)}")
     if mags:
-        L.append(f"- *Cross-check — MAGS (mcap-weighted Mag-7):* {pct(mags[2])} · "
+        L.append(f"- *Cross-check, MAGS (mcap-weighted Mag-7):* {pct(mags[2])} · "
                  f"{gap_phrase(mags[2], btc)}")
     if both_behind:
-        L.append("- **Where his call stands:** currently **losing** — both QQQ and the "
+        L.append("- **Where his call stands:** currently **losing**, both QQQ and the "
                  "AI basket are behind BTC. It only counts at the 12/24/36-month marks, "
                  "but that is the wrong side of it for him today.")
     elif both_ahead:
-        L.append("- **Where his call stands:** currently **winning** — both QQQ and the "
+        L.append("- **Where his call stands:** currently **winning**, both QQQ and the "
                  "AI basket are ahead of BTC.")
     else:
-        L.append("- **Where his call stands:** **mixed** — his claim needs *both* QQQ "
+        L.append("- **Where his call stands:** **mixed**, his claim needs *both* QQQ "
                  "and the AI basket above BTC at each mark.")
     parts = ai_parts_detail(snap)
     if parts:
         L.append(f"- Basket detail: {' · '.join(parts)}")
     L.append("---")
-    L.append("## The 6 bets — how many he has won")
+    L.append("## The 6 bets, how many he has won")
     _b = bets(snap, legs, today_d)
     L.append(f"**{_b['headline']}**")
     L.append("")
@@ -1118,12 +1163,12 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
         L.append(f"| {_r['name']} | {_r['resolves']} | **{_ico}** | {_r['note']} |")
     L.append("")
     L.append("Each 12/24/36-month bet needs **both** QQQ and the AI basket above "
-             "BTC at that mark. The record-high bet can only be **lost early** — "
-             "by BTC actually breaking it — and the 'test $57k' bet can only be "
+             "BTC at that mark. The record-high bet can only be **lost early**, "
+             "by BTC actually breaking it, and the 'test $57k' bet can only be "
              "**won early**. The 'never break ATH again' bet has no expiry: it can "
              "only be lost (by a break) or keep holding.")
     L.append("")
-    L.append("## Claim B — the record-high call (decides 2027-09-21)")
+    L.append("## Claim B, the record-high call (decides 2027-09-21)")
     if snap["ath_broken"]:
         L.append(f"- ⚠️ **BROKEN.** BTC printed ${peak['high']:,.0f} on {peak['date']} "
                  f"(record high to beat was ${BTC_ATH:,.0f}). This part of his call has already lost.")
@@ -1133,17 +1178,17 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
                  f"**${BTC_ATH - spot:,.0f} below it**.")
         if peak["high"]:
             L.append(f"- Highest print since the tweet: **${peak['high']:,.0f}** on "
-                     f"{peak['date']} — ${BTC_ATH - peak['high']:,.0f} below the record.")
+                     f"{peak['date']}, ${BTC_ATH - peak['high']:,.0f} below the record.")
         else:
             L.append("- ⚠️ **No BTC high-price data this run**, so the \"highest print "
-                     "since the tweet\" figure could not be checked — the spot distance "
+                     "since the tweet\" figure could not be checked, the spot distance "
                      "above is still sourced. Retried on the next run.")
         L.append(f"- BTC needs **{need:+.1f}%** to break it; **{days_between(today_d, dt.date.fromisoformat(WINDOW_END_B))} days** left in the window.")
     L.append("---")
-    L.append("## Claim C — test $57,000 (decides 2027-10-27)")
+    L.append("## Claim C, test $57,000 (decides 2027-10-27)")
     low = snap.get("btc_low_since") or {}
     if snap.get("tested_57k"):
-        L.append(f"- ✅ **TESTED.** BTC printed ${low['low']:,.0f} on {low['date']} — "
+        L.append(f"- ✅ **TESTED.** BTC printed ${low['low']:,.0f} on {low['date']}, "
                  f"at/below ${CLAIM_C_57K:,.0f}. Jason wins this bet.")
     else:
         above = (spot / CLAIM_C_57K - 1.0) * 100.0
@@ -1154,23 +1199,23 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
         L.append(f"- Needs a **${spot - CLAIM_C_57K:,.0f}** drop to test it; "
                  f"**{days_between(today_d, dt.date.fromisoformat(WINDOW_END_C))} days** left.")
     L.append("---")
-    L.append("## Claim D — never break the all-time high again (no expiry)")
+    L.append("## Claim D, never break the all-time high again (no expiry)")
     if snap.get("ath_broken_since2"):
         pk2 = snap.get("btc_peak_since2") or {}
-        L.append(f"- ⚠️ **BROKEN.** BTC printed ${pk2['high']:,.0f} on {pk2['date']} — "
+        L.append(f"- ⚠️ **BROKEN.** BTC printed ${pk2['high']:,.0f} on {pk2['date']}, "
                  f"above ${BTC_ATH:,.0f}. Jason loses this bet too.")
     else:
         L.append(f"- **Holding.** BTC is **{below:+.2f}%** below ${BTC_ATH:,.0f}. This "
-                 f"one has no end date — it is won only in the sense that it keeps "
+                 f"one has no end date, it is won only in the sense that it keeps "
                  f"holding.")
     L.append("---")
-    L.append("## Claim A — QQQ + AI vs BTC, per horizon")
+    L.append("## Claim A, QQQ + AI vs BTC, per horizon")
     for r in legs:
         if r["status"] == "open":
             running = f"QQQ {pct(snap['equities'][QQQ][2])}" if QQQ in snap["equities"] else "QQQ n/a"
             if ai is not None:
                 running += f" · AI {pct(ai)}"
-            L.append(f"- **{r['leg']}-month leg** (decides {r['date']}): open — "
+            L.append(f"- **{r['leg']}-month leg** (decides {r['date']}): open, "
                      f"{r['days_to']} days to go. Since his post: {running} · BTC {pct(btc)}.")
         elif r["status"] == "decided":
             L.append(f"- **{r['leg']}-month leg** (decided {r['date']}, priced "
@@ -1178,7 +1223,7 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
                      f"· BTC {pct(r['btc_ret'])} → **{r['verdict']}**")
         else:
             L.append(f"- **{r['leg']}-month leg** (was due {r['date']}): "
-                     f"{r['status']} — flagged for a manual look.")
+                     f"{r['status']}, flagged for a manual look.")
     L.append("---")
     if infl or supply:
         L.extend(debasement_lines(snap, infl, supply))
@@ -1204,11 +1249,11 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
     L.append("")
     probs = snap.get("btc_problems") or []
     if probs:
-        L.append(f"*Source note: one or more BTC feeds were unavailable this run — "
+        L.append(f"*Source note: one or more BTC feeds were unavailable this run, "
                  f"{'; '.join(probs[:3])}. Figures above use what did answer; the "
                  f"next run re-checks.*")
     if qqq:
-        L.append(f"*Return convention: equity legs are **total return** — every "
+        L.append(f"*Return convention: equity legs are **total return**, every "
                  f"dividend after {TWEET_DATE} is reinvested at its ex-date close "
                  f"(source: Nasdaq's dividend record). BTC pays no distributions, so "
                  f"it is unaffected. On a price-only basis QQQ is "
@@ -1217,7 +1262,7 @@ def render_monthly(snap, legs, today_d, st, infl=None, supply=None) -> str:
              f"BTC ${BASE_BTC:,.2f} (Nasdaq historical / CoinGecko). Record high "
              f"${BTC_ATH:,.0f} (CoinGecko {BTC_ATH_DATE}; Kraken daily high the same "
              f"day ${BTC_ATH_ALT:,.2f}). \"Top AI companies\" = equal-weight "
-             f"{', '.join(AI_BASKET)} — Alfred's reading of a vague phrase, easy to "
+             f"{', '.join(AI_BASKET)}, Alfred's reading of a vague phrase, easy to "
              f"change. SPCX (SpaceX+xAI since the Feb-2026 merger, IPO'd Jun 2026) is "
              f"itself a Nasdaq-100 member, so QQQ already holds it: those two lines "
              f"overlap by design.*")
@@ -1229,17 +1274,17 @@ def render_ath_alert(snap, today_d) -> str:
     b = bets(snap, milestone_positions(snap, today_d), today_d)
     after_b = today_d > dt.date.fromisoformat(WINDOW_END_B)
     if after_b:
-        subject = "⚠️ BTC broke its record high — Jason's 'never break ATH' bet is LOST"
+        subject = "⚠️ BTC broke its record high, Jason's 'never break ATH' bet is LOST"
         detail = ("his 12-month record-high call had already settled (won) at "
                   "2027-09-21, so this print ends only the open-ended 'never' claim")
     else:
-        subject = "⚠️ BTC broke its record high — 2 of Jason's bets are LOST"
+        subject = "⚠️ BTC broke its record high, 2 of Jason's bets are LOST"
         detail = ("both the 12-month record-high call and the 'never break ATH again' "
                   "call are settled by the same print")
     L = [f"Subject: {subject}",
          "Kind: jason-claim-alert",
          "# Jason's record-high bet(s) just lost",
-         f"**BTC printed ${peak['high']:,.0f} on {peak['date']}** — above the record "
+         f"**BTC printed ${peak['high']:,.0f} on {peak['date']}**, above the record "
          f"high of **${BTC_ATH:,.0f}** ({BTC_ATH_DATE}).",
          f"- {detail}.",
          f"- **Bets now: {b['headline']}**.",
@@ -1254,10 +1299,10 @@ def render_ath_alert(snap, today_d) -> str:
 def render_57k_alert(snap, today_d) -> str:
     low = snap.get("btc_low_since") or {}
     b = bets(snap, milestone_positions(snap, today_d), today_d)
-    L = [f"Subject: ⚠️ BTC printed $57,000 — Jason's 'test the 57k low' bet just WON",
+    L = [f"Subject: ⚠️ BTC printed $57,000, Jason's 'test the 57k low' bet just WON",
          "Kind: jason-claim-alert",
          "# Jason's 'test $57k' bet just won",
-         f"**BTC printed ${low.get('low'):,.0f} on {low.get('date')}** — at/below the "
+         f"**BTC printed ${low.get('low'):,.0f} on {low.get('date')}**, at/below the "
          f"**${CLAIM_C_57K:,.0f}** level his {TWEET2_DATE} tweet said it would test "
          f"within 12 months.",
          f"- **Bets now: {b['headline']}**.",
@@ -1271,7 +1316,7 @@ def render_57k_alert(snap, today_d) -> str:
 
 
 def render_milestone_alert(row, today_d) -> str:
-    L = [f"Subject: Jason's {row['leg']}-month call is decided — {row['verdict']}",
+    L = [f"Subject: Jason's {row['leg']}-month call is decided, {row['verdict']}",
          "Kind: jason-claim-alert",
          f"# {row['leg']}-month leg decided: {row['verdict']}",
          f"Priced at the {row['asof']} close ({row['date']} was the 12/24/36-month mark).",
@@ -1289,7 +1334,7 @@ def render_milestone_alert(row, today_d) -> str:
 # ----------------------------------------------------------------- delivery
 
 # Hard guard: when set, NO delivery path may send. The self-test sets this so a
-# harness bug can never put mail in a real mailbox (it did once — 2026-09-26, a
+# harness bug can never put mail in a real mailbox (it did once, 2026-09-26, a
 # stubbed-numbers copy reached Rune's inbox because the new rich path was not
 # intercepted). Defence in depth next to the harness's own monkeypatching.
 SEND_GUARD_ENV = "JASON_MONITOR_NO_SEND"
@@ -1306,7 +1351,7 @@ def _send_blocked() -> bool:
 def build_visuals(snap, legs, today_d, infl, supply, short, long_, dry) -> tuple:
     """Render the dashboard HTML + the 16:9 tweet card PNG.
 
-    Returns (html_path, png_path) — either may be None. Deliberately failure-
+    Returns (html_path, png_path), either may be None. Deliberately failure-
     tolerant: if the dashboard module or headless Chrome is unavailable the
     caller falls back to the plain HTML email, because a report that arrives
     is worth more than a pretty one that does not.
@@ -1468,7 +1513,7 @@ def run_daily(dry: bool, force: bool) -> int:
         return 0
     acted = False
 
-    # 1) claim B — the record high
+    # 1) claim B, the record high
     if snap["ath_broken"] and not st.get("ath_broken_notified"):
         stake = snap["btc_peak_since"]
         send(render_ath_alert(snap, t), f"ALERT-ath-broken-{t.isoformat()}.md", dry)
@@ -1476,7 +1521,7 @@ def run_daily(dry: bool, force: bool) -> int:
                                      "detected": t.isoformat()}
         acted = True
 
-    # 2) claim C — BTC tested $57,000 (Jason WINS that bet)
+    # 2) claim C, BTC tested $57,000 (Jason WINS that bet)
     if snap.get("tested_57k") and not st.get("tested_57k_notified"):
         low = snap.get("btc_low_since") or {}
         send(render_57k_alert(snap, t), f"ALERT-57k-tested-{t.isoformat()}.md", dry)
@@ -1484,7 +1529,7 @@ def run_daily(dry: bool, force: bool) -> int:
                                      "detected": t.isoformat()}
         acted = True
 
-    # 3) claim A — a milestone that has arrived and is not yet reported
+    # 3) claim A, a milestone that has arrived and is not yet reported
     resolved = st.get("milestones_reported") or {}
     already = {v.get("date") for v in resolved.values()}
     pending = [m for _, m in MILESTONES
@@ -1512,7 +1557,7 @@ def run_daily(dry: bool, force: bool) -> int:
     if not acted:
         log(f"daily {t}: silent (BTC ${snap['btc_spot']:,.0f}, peak since tweet "
             f"${snap['btc_peak_since']['high'] or 0:,.0f})")
-    print(f"daily check {t}: {'event(s) sent' if acted else 'silent'} — "
+    print(f"daily check {t}: {'event(s) sent' if acted else 'silent'}, "
           f"BTC ${snap['btc_spot']:,.0f}, peak since tweet "
           f"${snap['btc_peak_since']['high'] or 0:,.0f} vs record ${BTC_ATH:,.0f}")
     return 0
@@ -1529,7 +1574,7 @@ def run_status() -> int:
 # ----------------------------------------------------------------- selftest
 
 def selftest() -> int:
-    """Stubbed end-to-end test — no network, no mail, throwaway state dir."""
+    """Stubbed end-to-end test, no network, no mail, throwaway state dir."""
     import tempfile
 
     global STATE_DIR, STATE, REPORTS, LOG
@@ -1606,7 +1651,7 @@ def selftest() -> int:
 
     t_saved = os.environ.get("TODAY")
     try:
-        # 1 — normal day, claim intact, both behind BTC -> "losing" wording
+        # 1, normal day, claim intact, both behind BTC -> "losing" wording
         set_today("2026-09-26")
         STATE.unlink(missing_ok=True)
         stub(equity_mult={s: 0.99 for s in AI_BASKET} | {QQQ: 1.004},
@@ -1619,7 +1664,7 @@ def selftest() -> int:
         check("gap shown as below, not -49%", "below it**" in md and "-49.5" not in md)
         check("all three legs listed open", md.count("-month leg**") == 3)
 
-        # 2 — monthly send + idempotence (goes down the RICH path: html + card png)
+        # 2, monthly send + idempotence (goes down the RICH path: html + card png)
         check("delivery guard is armed in the harness",
               os.environ.get(SEND_GUARD_ENV) == "1")
         n0 = len(sent)
@@ -1632,7 +1677,7 @@ def selftest() -> int:
         run_monthly(False, True)   # FORCE
         check("monthly FORCE resends", len(sent) == n0 + 2)
 
-        # 3 — BTC breaks the record high -> alert once, then silent
+        # 3, BTC breaks the record high -> alert once, then silent
         n1 = len(sent)
         STATE.unlink(missing_ok=True)
         stub(spot_v=130000.0, highs={"2026-09-25": 130500.0})
@@ -1656,7 +1701,7 @@ def selftest() -> int:
         run_daily(True, False)     # same day, dry
         check("dry daily run is silent", len(sent) == n2)
 
-        # 3b — BTC tests $57,000 -> claim C won early (Jason wins), alert once
+        # 3b, BTC tests $57,000 -> claim C won early (Jason wins), alert once
         set_today("2026-11-05")
         STATE.unlink(missing_ok=True)
         stub(spot_v=56900.0, highs={"2026-11-04": 58000.0},
@@ -1676,7 +1721,7 @@ def selftest() -> int:
         run_daily(False, False)
         check("57k alert not repeated", len(sent) == n57b)
 
-        # 4 — milestone decided: he WINS (both QQQ and AI above BTC)
+        # 4, milestone decided: he WINS (both QQQ and AI above BTC)
         set_today("2027-09-22")
         STATE.unlink(missing_ok=True)
         stub(equity_mult={s: 1.80 for s in AI_BASKET} | {QQQ: 1.50},
@@ -1689,7 +1734,7 @@ def selftest() -> int:
         check("milestone verdict = he wins", "JASON WINS" in sent[-1][1], sent[-1][1][:300])
         check("milestone recorded", "12" in (load_state().get("milestones_reported") or {}))
 
-        # 5 — same milestone, split result (QQQ beats BTC, AI basket does not)
+        # 5, same milestone, split result (QQQ beats BTC, AI basket does not)
         set_today("2027-09-22")
         STATE.unlink(missing_ok=True)
         stub(equity_mult={s: 1.02 for s in AI_BASKET} | {QQQ: 1.50},
@@ -1699,7 +1744,7 @@ def selftest() -> int:
         run_daily(False, False)
         check("split verdict detected", "SPLIT" in sent[-1][1], sent[-1][1][:300])
 
-        # 6 — data-source failure path (monthly) emails once and does not crash
+        # 6, data-source failure path (monthly) emails once and does not crash
         set_today("2026-10-01")
         STATE.unlink(missing_ok=True)
         globals()["nasdaq_closes"] = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))
@@ -1711,7 +1756,7 @@ def selftest() -> int:
         rc = run_monthly(False, False)
         check("failure email throttled per day", rc == 0 and len(sent) == n3 + 1)
 
-        # 7 — real terms (debasement) + the ready-to-post draft
+        # 7, real terms (debasement) + the ready-to-post draft
         set_today("2027-09-22")
         STATE.unlink(missing_ok=True)
         stub(equity_mult={s: 1.30 for s in AI_BASKET} | {QQQ: 1.20},
@@ -1724,7 +1769,7 @@ def selftest() -> int:
         sup = btc_supply()
         md = render_monthly(snap, legs, today(), {}, infl=infl, supply=sup)
         check("real-terms section rendered",
-              "Real terms — what's left after the dollar shrinks" in md)
+              "Real terms, what's left after the dollar shrinks" in md)
         # hand-checked Fisher maths: 3.86% nominal over 1.756% inflation -> 2.068% real
         check("Fisher conversion correct",
               abs(real_return(3.86, 1.756) - 2.068) < 0.01,
@@ -1752,7 +1797,7 @@ def selftest() -> int:
         check("no M2 line (Rune: CPI is enough)", "US M2" not in md)
         # regression guard for the ambiguity Rune caught 2026-09-26: "vs BTC -4.47%"
         # read as "BTC is down 4.47%" when it was the AI basket trailing by that gap.
-        # Only the signed-gap form is a bug — the section heading "QQQ + AI vs BTC" is fine.
+        # Only the signed-gap form is a bug, the section heading "QQQ + AI vs BTC" is fine.
         import re as _re
         amb = _re.findall(r"vs BTC[^\n]{0,8}[-+]\d", md)
         check("no ambiguous 'vs BTC <signed %>' gap form anywhere", not amb, amb[:3])
@@ -1771,7 +1816,7 @@ def selftest() -> int:
         check("report gap text matches the fixture's arithmetic",
               exp_phrase in md, exp_phrase)
         check("draft is 2 lines", short.count("\n") == 1, repr(short))
-        # 7c — the visual products render, and agree with the text report
+        # 7c, the visual products render, and agree with the text report
         try:
             import importlib.util as _il
             _sp = _il.spec_from_file_location("jd", DASH_MODULE)
@@ -1857,7 +1902,7 @@ def selftest() -> int:
             check("card numbers are large relative to width (>=108px)",
                   "108px" in chtml)
 
-            # dark mode (Rune, 2026-09-26) — assert measured contrast, since a
+            # dark mode (Rune, 2026-09-26), assert measured contrast, since a
             # dark card that merely *has* the right colour names can still be
             # unreadable, and the light-theme greens/reds are far too dark here.
             def _lum(hexcol):
@@ -1897,7 +1942,7 @@ def selftest() -> int:
               "purchasing power" in long_, long_[:200])
         check("longer draft is not a verdict", "Not financial advice" in long_)
 
-        # 7b — the draft changes shape in the three states
+        # 7b, the draft changes shape in the three states
         set_today("2026-09-26")          # before any milestone: the intact state
         STATE.unlink(missing_ok=True)
         stub(equity_mult={s: 0.99 for s in AI_BASKET} | {QQQ: 1.004},
@@ -1934,7 +1979,7 @@ def selftest() -> int:
         check("every draft state stays inside the 240-char comfort limit",
               all(len(x) <= 240 for x in (si, sb, sd)),
               f"{len(si)}/{len(sb)}/{len(sd)}")
-        # 7d — the guard itself: a real send must be REFUSED while it is armed.
+        # 7d, the guard itself: a real send must be REFUSED while it is armed.
         # (This is the regression test for the 2026-09-26 incident, where a
         # harness run put a stubbed-numbers email in the user's mailbox.)
         set_today("2026-09-27")
@@ -1946,7 +1991,7 @@ def selftest() -> int:
         check("real send is refused while the guard is armed", refused is False)
         check("no message recorded by the refused send", len(sent) == n_guard)
         globals()["send"] = fake_send
-        # 7e — total return: dividends reinvested, baseline-day ex-date excluded
+        # 7e, total return: dividends reinvested, baseline-day ex-date excluded
         check("dividend parse drops the baseline-day ex-date and future dates",
               parse_dividend_rows([
                   {"exOrEffDate": "09/21/2026", "amount": "$0.75143"},  # == baseline: skip
@@ -1957,7 +2002,7 @@ def selftest() -> int:
                   {"exOrEffDate": "11/19/2026", "amount": "N/A"},
               ], upto="2026-12-31") == [("2026-12-22", 0.80)])
         # compounding maths, hand-checked: identity is (1+TR)/(1+PX) = 1 + d/P1,
-        # so the absolute pp gap is exactly d/P0 (not d/P1 — a first-draft test
+        # so the absolute pp gap is exactly d/P0 (not d/P1, a first-draft test
         # asserted d/P1 and failed, correctly).
         ser = {"2026-09-21": 741.47, "2026-12-22": 700.0}
         f = tr_factor("QQQ", [("2026-12-22", 3.0918)], ser, [])
