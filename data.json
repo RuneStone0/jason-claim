@@ -8,7 +8,7 @@
   "as_of": "2026-11-11",
   "day_of": 51,
   "total_days": 1095,
-  "generated_at": "2026-11-11T18:02:48Z",
+  "generated_at": "2026-11-11T18:07:43Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both behind BTC",
  "scoreboard": {
   "btc": {
-   "price": 74453.0,
-   "ret_pct": -8.27
+   "price": 74374.0,
+   "ret_pct": -8.37
   },
   "qqq": {
    "price": 674.76,
    "ret_pct": -9.0,
-   "behind_btc_pct": -0.72
+   "behind_btc_pct": -0.63
   },
   "ai": {
    "ret_pct": -10.39,
-   "behind_btc_pct": -2.11,
+   "behind_btc_pct": -2.01,
    "basket": [
     "NVDA",
     "MSFT",
@@ -58,7 +58,7 @@
   "mags": {
    "price": 68.55,
    "ret_pct": -6.06,
-   "behind_btc_pct": 2.22
+   "behind_btc_pct": 2.31
   }
  },
  "bets": {
@@ -75,7 +75,7 @@
     "kind": "horizon",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "the AI basket 2.11% behind BTC",
+    "note": "the AI basket 2.01% behind BTC",
     "leg": "12"
    },
    {
@@ -83,7 +83,7 @@
     "kind": "horizon",
     "resolves": "2028-09-21",
     "status": "open",
-    "note": "the AI basket 2.11% behind BTC",
+    "note": "the AI basket 2.01% behind BTC",
     "leg": "24"
    },
    {
@@ -91,7 +91,7 @@
     "kind": "horizon",
     "resolves": "2029-09-21",
     "status": "open",
-    "note": "the AI basket 2.11% behind BTC",
+    "note": "the AI basket 2.01% behind BTC",
     "leg": "36"
    },
    {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 40.9% below $126,080 · 314 days left",
+    "note": "BTC 41.0% below $126,080 · 314 days left",
     "leg": null
    },
    {
@@ -107,7 +107,7 @@
     "kind": "57k",
     "resolves": "2027-10-27",
     "status": "open",
-    "note": "BTC 31% above $57,000 · 350 days left",
+    "note": "BTC 30% above $57,000 · 350 days left",
     "leg": null
    },
    {
@@ -122,9 +122,9 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 74453.0,
-  "below_pct": 40.95,
-  "below_usd": 51627.0,
+  "btc": 74374.0,
+  "below_pct": 41.01,
+  "below_usd": 51706.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
@@ -133,8 +133,8 @@
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 74453.0,
-  "above_pct": 30.6,
+  "btc": 74374.0,
+  "above_pct": 30.5,
   "days_left": 350
  },
  "cpi": {
@@ -250,7 +250,7 @@
    -6.644,
    -7.92,
    -7.272,
-   -8.285
+   -8.389
   ],
   "qqq": [
    0.0,
