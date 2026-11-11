@@ -8,7 +8,7 @@
   "as_of": "2026-11-11",
   "day_of": 51,
   "total_days": 1095,
-  "generated_at": "2026-11-11T17:55:28Z",
+  "generated_at": "2026-11-11T18:02:48Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,13 +21,13 @@
  "standing": "both behind BTC",
  "scoreboard": {
   "btc": {
-   "price": 74455.0,
+   "price": 74453.0,
    "ret_pct": -8.27
   },
   "qqq": {
    "price": 674.76,
    "ret_pct": -9.0,
-   "behind_btc_pct": -0.73
+   "behind_btc_pct": -0.72
   },
   "ai": {
    "ret_pct": -10.39,
@@ -58,7 +58,7 @@
   "mags": {
    "price": 68.55,
    "ret_pct": -6.06,
-   "behind_btc_pct": 2.21
+   "behind_btc_pct": 2.22
   }
  },
  "bets": {
@@ -122,9 +122,9 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 74455.0,
+  "btc": 74453.0,
   "below_pct": 40.95,
-  "below_usd": 51625.0,
+  "below_usd": 51627.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
@@ -133,7 +133,7 @@
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 74455.0,
+  "btc": 74453.0,
   "above_pct": 30.6,
   "days_left": 350
  },
@@ -250,7 +250,7 @@
    -6.644,
    -7.92,
    -7.272,
-   -8.296
+   -8.285
   ],
   "qqq": [
    0.0,
