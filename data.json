@@ -5,10 +5,10 @@
   "tweet_url": "https://x.com/Jason/status/2102051827671871601",
   "tweet2_url": "https://x.com/jason/status/2114956980674605075",
   "ref_url": "https://x.com/AlexesNakamoto/status/2115053956355231814",
-  "as_of": "2026-11-16",
-  "day_of": 56,
+  "as_of": "2026-11-17",
+  "day_of": 57,
   "total_days": 1095,
-  "generated_at": "2026-11-16T23:04:47Z",
+  "generated_at": "2026-11-17T21:56:35Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both ahead of BTC",
  "scoreboard": {
   "btc": {
-   "price": 65243.0,
-   "ret_pct": -19.62
+   "price": 64251.0,
+   "ret_pct": -20.84
   },
   "qqq": {
-   "price": 679.89,
-   "ret_pct": -8.31,
-   "behind_btc_pct": 11.32
+   "price": 661.75,
+   "ret_pct": -10.75,
+   "behind_btc_pct": 10.09
   },
   "ai": {
-   "ret_pct": -10.21,
-   "behind_btc_pct": 9.41,
+   "ret_pct": -13.43,
+   "behind_btc_pct": 7.41,
    "basket": [
     "NVDA",
     "MSFT",
@@ -44,21 +44,21 @@
     "SPCX"
    ],
    "parts": {
-    "NVDA": -28.38,
-    "MSFT": 4.44,
-    "GOOGL": -16.677,
-    "AMZN": 3.177,
-    "META": -13.431,
-    "AVGO": -4.315,
-    "AMD": -13.234,
-    "TSM": -10.426,
-    "SPCX": -8.39
+    "NVDA": -31.331,
+    "MSFT": 3.265,
+    "GOOGL": -20.072,
+    "AMZN": -0.271,
+    "META": -15.493,
+    "AVGO": -8.068,
+    "AMD": -18.073,
+    "TSM": -16.105,
+    "SPCX": -9.542
    }
   },
   "mags": {
-   "price": 68.66,
-   "ret_pct": -5.91,
-   "behind_btc_pct": 13.71
+   "price": 66.94,
+   "ret_pct": -8.26,
+   "behind_btc_pct": 12.58
   }
  },
  "bets": {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 48.3% below $126,080 · 309 days left",
+    "note": "BTC 49.0% below $126,080 · 308 days left",
     "leg": null
    },
    {
@@ -107,7 +107,7 @@
     "kind": "57k",
     "resolves": "2027-10-27",
     "status": "open",
-    "note": "BTC 14% above $57,000 · 345 days left",
+    "note": "BTC 13% above $57,000 · 344 days left",
     "leg": null
    },
    {
@@ -122,20 +122,20 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 65243.0,
-  "below_pct": 48.25,
-  "below_usd": 60837.0,
+  "btc": 64251.0,
+  "below_pct": 49.04,
+  "below_usd": 61829.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
   },
-  "days_left": 309
+  "days_left": 308
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 65243.0,
-  "above_pct": 14.5,
-  "days_left": 345
+  "btc": 64251.0,
+  "above_pct": 12.7,
+  "days_left": 344
  },
  "cpi": {
   "yoy_pct": 0,
@@ -201,7 +201,8 @@
    "2026-11-13",
    "2026-11-14",
    "2026-11-15",
-   "2026-11-16"
+   "2026-11-16",
+   "2026-11-17"
   ],
   "btc": [
    -0.0,
@@ -260,7 +261,8 @@
    -12.07,
    -15.838,
    -21.004,
-   -19.653
+   -19.544,
+   -20.866
   ],
   "qqq": [
    0.0,
@@ -319,6 +321,7 @@
    -8.305,
    null,
    null,
+   -10.752,
    null
   ],
   "ai": [
@@ -378,6 +381,7 @@
    -10.213,
    null,
    null,
+   -13.432,
    null
   ]
  },
