@@ -8,7 +8,7 @@
   "as_of": "2026-11-24",
   "day_of": 64,
   "total_days": 1095,
-  "generated_at": "2026-11-24T01:17:07Z",
+  "generated_at": "2026-11-24T23:18:49Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both ahead of BTC",
  "scoreboard": {
   "btc": {
-   "price": 61495.0,
-   "ret_pct": -24.24
+   "price": 59974.0,
+   "ret_pct": -26.11
   },
   "qqq": {
-   "price": 608.45,
-   "ret_pct": -17.94,
-   "behind_btc_pct": 6.3
+   "price": 651.03,
+   "ret_pct": -12.2,
+   "behind_btc_pct": 13.91
   },
   "ai": {
-   "ret_pct": -22.52,
-   "behind_btc_pct": 1.72,
+   "ret_pct": -16.07,
+   "behind_btc_pct": 10.04,
    "basket": [
     "NVDA",
     "MSFT",
@@ -44,21 +44,21 @@
     "SPCX"
    ],
    "parts": {
-    "NVDA": -44.793,
-    "MSFT": -3.217,
-    "GOOGL": -25.264,
-    "AMZN": -4.5,
-    "META": -24.339,
-    "AVGO": -16.062,
-    "AMD": -31.052,
-    "TSM": -28.402,
-    "SPCX": -15.845
+    "NVDA": -27.412,
+    "MSFT": -1.623,
+    "GOOGL": -20.528,
+    "AMZN": -1.184,
+    "META": -19.379,
+    "AVGO": -13.542,
+    "AMD": -26.329,
+    "TSM": -18.318,
+    "SPCX": -12.183
    }
   },
   "mags": {
-   "price": 61.66,
-   "ret_pct": -15.5,
-   "behind_btc_pct": 8.74
+   "price": 66.36,
+   "ret_pct": -9.06,
+   "behind_btc_pct": 17.05
   }
  },
  "bets": {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 51.2% below $126,080 · 301 days left",
+    "note": "BTC 52.4% below $126,080 · 301 days left",
     "leg": null
    },
    {
@@ -122,9 +122,9 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 61495.0,
-  "below_pct": 51.23,
-  "below_usd": 64585.0,
+  "btc": 59974.0,
+  "below_pct": 52.43,
+  "below_usd": 66106.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
@@ -133,8 +133,8 @@
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 61495.0,
-  "above_pct": 7.9,
+  "btc": 59974.0,
+  "above_pct": 5.2,
   "days_left": 337
  },
  "cpi": {
@@ -276,7 +276,7 @@
    -27.537,
    -25.931,
    -24.636,
-   -24.238
+   -26.163
   ],
   "qqq": [
    0.0,
@@ -342,7 +342,7 @@
    -17.94,
    null,
    null,
-   null,
+   -12.197,
    null
   ],
   "ai": [
@@ -409,7 +409,7 @@
    -22.538,
    null,
    null,
-   null,
+   -16.093,
    null
   ]
  },
