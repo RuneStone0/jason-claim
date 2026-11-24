@@ -5,10 +5,10 @@
   "tweet_url": "https://x.com/Jason/status/2102051827671871601",
   "tweet2_url": "https://x.com/jason/status/2114956980674605075",
   "ref_url": "https://x.com/AlexesNakamoto/status/2115053956355231814",
-  "as_of": "2026-11-22",
-  "day_of": 62,
+  "as_of": "2026-11-24",
+  "day_of": 64,
   "total_days": 1095,
-  "generated_at": "2026-11-22T20:30:38Z",
+  "generated_at": "2026-11-24T01:17:07Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both ahead of BTC",
  "scoreboard": {
   "btc": {
-   "price": 60517.0,
-   "ret_pct": -25.44
+   "price": 61495.0,
+   "ret_pct": -24.24
   },
   "qqq": {
    "price": 608.45,
    "ret_pct": -17.94,
-   "behind_btc_pct": 7.5
+   "behind_btc_pct": 6.3
   },
   "ai": {
    "ret_pct": -22.52,
-   "behind_btc_pct": 2.92,
+   "behind_btc_pct": 1.72,
    "basket": [
     "NVDA",
     "MSFT",
@@ -58,7 +58,7 @@
   "mags": {
    "price": 61.66,
    "ret_pct": -15.5,
-   "behind_btc_pct": 9.94
+   "behind_btc_pct": 8.74
   }
  },
  "bets": {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 52.0% below $126,080 · 303 days left",
+    "note": "BTC 51.2% below $126,080 · 301 days left",
     "leg": null
    },
    {
@@ -122,20 +122,20 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 60517.0,
-  "below_pct": 52.0,
-  "below_usd": 65563.0,
+  "btc": 61495.0,
+  "below_pct": 51.23,
+  "below_usd": 64585.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
   },
-  "days_left": 303
+  "days_left": 301
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 60517.0,
-  "above_pct": 6.2,
-  "days_left": 339
+  "btc": 61495.0,
+  "above_pct": 7.9,
+  "days_left": 337
  },
  "cpi": {
   "yoy_pct": 0,
@@ -207,7 +207,9 @@
    "2026-11-19",
    "2026-11-20",
    "2026-11-21",
-   "2026-11-22"
+   "2026-11-22",
+   "2026-11-23",
+   "2026-11-24"
   ],
   "btc": [
    -0.0,
@@ -272,7 +274,9 @@
    -22.388,
    -23.713,
    -27.537,
-   -25.442
+   -25.931,
+   -24.636,
+   -24.238
   ],
   "qqq": [
    0.0,
@@ -336,6 +340,8 @@
    -11.054,
    -13.005,
    -17.94,
+   null,
+   null,
    null,
    null
   ],
@@ -401,6 +407,8 @@
    -12.571,
    -15.703,
    -22.538,
+   null,
+   null,
    null,
    null
   ]
