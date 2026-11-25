@@ -469,18 +469,40 @@ def nasdaq_closes(syms: list, frm: dt.date, to: dt.date) -> dict:
     out = {}
     for s in syms:
         cls = NASDAQ_CLASS.get(s, "stocks")
-        url = (f"https://api.nasdaq.com/api/quote/{s}/historical?assetclass={cls}"
-               f"&fromdate={frm.isoformat()}&todate={to.isoformat()}&limit=9999")
+        # Nasdaq serves a *cached* vendor error per exact URL: measured 2026-11-25, GOOGL with
+        # limit=9999 answered {"bCodeMessage": "Error while calling vendor"} and zero rows for
+        # minutes while limit=500 on the same symbol answered 47 rows. So each retry changes the
+        # URL (a different limit) instead of repeating a request that is cached as broken.
+        base = (f"https://api.nasdaq.com/api/quote/{s}/historical?assetclass={cls}"
+                f"&fromdate={frm.isoformat()}&todate={to.isoformat()}")
         series = {}
-        try:
-            d = json.loads(http(url, headers=NASDAQ_HEADERS))
-            rows = d["data"]["tradesTable"]["rows"]
-            for r in rows:
-                m, dd, y = r["date"].split("/")
-                series[f"{y}-{m.zfill(2)}-{dd.zfill(2)}"] = float(
-                    r["close"].replace("$", "").replace(",", "").strip())
-        except Exception as e:        # noqa: BLE001
-            log(f"nasdaq {s} failed: {repr(e)[:120]}")
+        for attempt, lim in enumerate(("9999", "500", "250", "100"), start=1):
+            try:
+                d = json.loads(http(base + f"&limit={lim}", headers=NASDAQ_HEADERS))
+                rows = ((d.get("data") or {}).get("tradesTable") or {}).get("rows")
+                if not rows:
+                    msg = (((d.get("status") or {}).get("bCodeMessage") or [{}])[0]
+                           or {}).get("errorMessage")
+                    raise ValueError(f"empty table ({msg or 'no rows'})")
+                for r in rows:
+                    m, dd, y = r["date"].split("/")
+                    series[f"{y}-{m.zfill(2)}-{dd.zfill(2)}"] = float(
+                        r["close"].replace("$", "").replace(",", "").strip())
+                if attempt > 1:
+                    log(f"nasdaq {s}: recovered on limit={lim} (attempt {attempt})")
+                break
+            except Exception as e:    # noqa: BLE001, any failure -> retry
+                log(f"nasdaq {s} attempt {attempt} limit={lim} failed: {repr(e)[:120]}")
+                time.sleep(3)
+        if not series:
+            # History beats a quote: a real-time last price is a single point, which blanks the
+            # whole chart line (the composite needs every basket name on a date). Try Yahoo
+            # history for this one symbol before settling for the quote.
+            rng = "1y" if (to - frm).days > 90 else "3mo"
+            series = (yahoo_closes([s], rng=rng) or {}).get(s) or {}
+            if series:
+                log(f"nasdaq {s}: historical empty -> yahoo history fallback "
+                    f"({len(series)} points)")
         if series:
             out[s] = series
         else:

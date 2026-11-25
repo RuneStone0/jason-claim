@@ -23,6 +23,56 @@ import jason_claim_monitor as jm   # noqa: E402
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REF_URL = "https://x.com/AlexesNakamoto/status/2115053956355231814"  # "11 years"
 TOTAL_DAYS = 1095
+CLOSES_CACHE = "closes.json"
+
+
+def _cache_load(checkout: str) -> dict:
+    """Last published per-symbol closes, committed with the page (the repo is the cache)."""
+    try:
+        with open(os.path.join(checkout, CLOSES_CACHE), encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except Exception:                                   # noqa: BLE001
+        return {}
+
+
+def _cache_merge(snap: dict, cache: dict) -> dict:
+    """Fill dates this run's feed did not deliver from the last published closes.
+
+    Why (2026-11-25): api.nasdaq.com returned HTTP 200 with
+    {"bCodeMessage": "Error while calling vendor"} and an empty table for GOOGL only. The AI line
+    needs every basket name on every date, so 46 points became 0 and the publish was blocked.
+    The feed gap is temporary, the history is not lost: carrying the last published close for the
+    missing dates keeps the line continuous and truthful, and the payload says which symbols were
+    carried. Returns {sym: number_of_carried_dates}.
+    """
+    series = snap.get("series") or {}
+    filled = {}
+    for s, old in (cache or {}).items():
+        if not isinstance(old, dict):
+            continue
+        ser = series.setdefault(s, {})
+        gap = {d: px for d, px in old.items()
+               if d >= jm.TWEET_DATE and d not in ser and isinstance(px, (int, float))}
+        if gap:
+            ser.update(gap)
+            filled[s] = len(gap)
+    if filled:
+        snap["equities"] = jm.equity_rets(series, snap.get("divs") or {}, [])
+        snap["ai_ret"], snap["ai_parts"] = jm.basket_ret(snap["equities"], jm.AI_BASKET)
+    return filled
+
+
+def _cache_save(checkout: str, series: dict) -> None:
+    out = {s: {d: px for d, px in ser.items() if d >= jm.TWEET_DATE}
+           for s, ser in (series or {}).items() if ser}
+    if not out:
+        return
+    try:
+        with open(os.path.join(checkout, CLOSES_CACHE), "w", encoding="utf-8") as f:
+            json.dump(out, f, indent=0, sort_keys=True)
+    except OSError:
+        pass
 
 
 def _gh_token() -> str:
@@ -56,25 +106,34 @@ def _standing(qqq_ret, ai_ret, btc_ret):
 
 def _chart(snap, btc_series, today_d):
     qqq_series = snap["series"].get(jm.QQQ, {})
+    # Per-symbol closes relative to the baseline, then forward-filled over missing dates inside
+    # the loop below: one vendor gap on one ticker must not null the whole composite for every
+    # date (2026-11-25, GOOGL history returned an empty table and the AI line went blank).
     per_sym = {}
     for s in jm.AI_BASKET:
-        ser = snap["series"].get(s, {})
-        for d, px in ser.items():
-            if d < jm.TWEET_DATE:
-                continue
-            per_sym.setdefault(d, {})[s] = px / jm.BASE[s]
+        ser = {d: px for d, px in (snap["series"].get(s) or {}).items()
+               if d >= jm.TWEET_DATE and s in jm.BASE}
+        if ser:
+            per_sym[s] = {d: px / jm.BASE[s] for d, px in ser.items()}
     dates = {d for d in btc_series if d >= jm.TWEET_DATE}
     dates |= set(qqq_series)
-    dates |= set(per_sym)
+    trading = set()          # dates any basket name actually reported: keeps AI on trading days
+    for ser in per_sym.values():
+        dates |= set(ser)
+        trading |= set(ser)
     dates = sorted(dates)
     btc, qqq, ai = [], [], []
+    last = {}
     for d in dates:
         b = btc_series.get(d)
         btc.append(None if b is None else round((b / jm.BASE_BTC - 1.0) * 100.0, 3))
         q = qqq_series.get(d)
         qqq.append(None if q is None else round((q / jm.BASE[jm.QQQ] - 1.0) * 100.0, 3))
-        parts = per_sym.get(d)
-        if parts and len(parts) == len(jm.AI_BASKET):
+        for s, ser in per_sym.items():
+            if d in ser:
+                last[s] = ser[d]
+        parts = dict(last)
+        if d in trading and parts and len(parts) == len(jm.AI_BASKET):
             acc = 1.0
             for f in parts.values():
                 acc *= f
@@ -183,7 +242,7 @@ def _coverage(chart: dict) -> tuple[dict, int]:
              for k in ("btc", "qqq", "ai")}, len(dates))
 
 
-def guard_payload(payload: dict, prev_path: str) -> list:
+def guard_payload(payload: dict, prev_path: str, basket_pts: dict | None = None) -> list:
     """Reasons this payload must NOT be published. Empty list means it is safe.
 
     Why (2026-11-11): api.nasdaq.com began answering urllib with 403. `nasdaq_closes` swallowed it,
@@ -215,7 +274,13 @@ def guard_payload(payload: dict, prev_path: str) -> list:
             # A regression, not a level: a short window legitimately has few points, but losing
             # more than 40 percent of the points we had yesterday is a broken feed, not news.
             if pcov[k] >= 5 and cov[k] < max(3, int(pcov[k] * 0.6)):
-                problems.append(f"{k} chart coverage fell {pcov[k]} -> {cov[k]} points")
+                why = ""
+                if k == "ai" and basket_pts:
+                    short = {s: n for s, n in basket_pts.items() if n < 3}
+                    if short:
+                        why = (" (basket history missing: "
+                               + ", ".join(f"{s} {n}" for s, n in sorted(short.items())) + ")")
+                problems.append(f"{k} chart coverage fell {pcov[k]} -> {cov[k]} points{why}")
     return problems
 
 
@@ -227,8 +292,16 @@ def main() -> int:
     checkout = sys.argv[1] if len(sys.argv) > 1 else REPO
     dry = bool(os.environ.get("DRY_RUN"))
     t = jm.today()
+    carried = {}
     try:
         snap = jm.build_snapshot(t)                    # total-return snapshot
+        # Fill any dates this run's feed missed from the last published closes before anything is
+        # derived from them (returns, legs, chart). A one-symbol vendor gap must not blank a line.
+        carried = _cache_merge(snap, _cache_load(checkout))
+        if carried:
+            print("publish: carried closes from the last publish for "
+                  + ", ".join(f"{s} ({n})" for s, n in sorted(carried.items())),
+                  file=sys.stderr)
         legs = jm.milestone_positions(snap, t)
         b = jm.bets(snap, legs, t)
         btc_series = jm.btc_daily(max(40, jm.days_between(dt.date.fromisoformat(jm.TWEET_DATE), t) + 3))
@@ -242,19 +315,27 @@ def main() -> int:
         print(f"publish: CPI unavailable ({repr(e)[:120]}), omitting", file=sys.stderr)
 
     payload = build_payload(snap, legs, b, t, infl, btc_series)
+    if carried:
+        payload["notes"].append(
+            "Vendor gap on this run: closes carried from the previous publish for "
+            + ", ".join(f"{s} ({n} dates)" for s, n in sorted(carried.items()))
+            + ".")
+    basket_pts = {s: sum(1 for d in (snap["series"].get(s) or {}) if d >= jm.TWEET_DATE)
+                  for s in jm.AI_BASKET}
     os.makedirs(checkout, exist_ok=True)
     out = os.path.join(checkout, "data.json")
 
     # THE FLOOR. Refuse to overwrite a good page with a degraded one, and say why in a place a
     # person will look. FORCE_PUBLISH=1 is for a deliberate, hand-checked publish only.
-    problems = guard_payload(payload, out)
+    problems = guard_payload(payload, out, basket_pts)
     status_path = os.environ.get("PUBLISH_GUARD_STATUS",
                                  "/opt/data/reports/jason-claim/publish-guard.json")
     cov, ndates = _coverage(payload.get("chart") or {})
     status = {"at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
               "as_of": payload["meta"]["as_of"], "dates": ndates, "coverage": cov,
               "standing": payload.get("standing"), "blocked": bool(problems),
-              "problems": problems, "forced": bool(os.environ.get("FORCE_PUBLISH"))}
+              "problems": problems, "forced": bool(os.environ.get("FORCE_PUBLISH")),
+              "ai_basket_points": basket_pts, "carried": carried}
     try:
         os.makedirs(os.path.dirname(status_path), exist_ok=True)
         with open(status_path, "w", encoding="utf-8") as f:
@@ -271,6 +352,8 @@ def main() -> int:
 
     with open(out, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
+    # The closes that just shipped are the cache the next run falls back on.
+    _cache_save(checkout, snap["series"])
     print(f"wrote {out} (as_of {payload['meta']['as_of']}, "
           f"day {payload['meta']['day_of']}, QQQ {payload['scoreboard']['qqq']['ret_pct']}%, "
           f"AI {payload['scoreboard']['ai']['ret_pct']}%, "
@@ -331,6 +414,21 @@ def main() -> int:
         print(f"commit failed: {r.stderr.strip()[:300]}", file=sys.stderr)
         return 1
     r = _run(["git", "push", "origin", "HEAD:main"], env, checkout)
+    if r.returncode != 0:
+        # The GitHub schedule publishes this same page on its own clock, so a push can lose the
+        # race and be rejected as non-fast-forward. Before 2026-11-25 that rejection left the
+        # local checkout 14 commits ahead and 13 behind while the live page silently stayed a day
+        # stale. Re-base our tree onto whatever landed and retry once.
+        out = (r.stderr or "") + (r.stdout or "")
+        if any(k in out for k in ("non-fast-forward", "fetch first", "rejected", "behind")):
+            print("push rejected, rewriting onto origin/main and retrying", file=sys.stderr)
+            _run(["git", "fetch", "origin"], env, checkout)
+            rr = _run(["git", "reset", "--soft", "origin/main"], env, checkout)
+            if rr.returncode == 0:
+                _run(["git", "commit", "-m",
+                      f"data: standing {payload['meta']['as_of']} "
+                      f"(day {payload['meta']['day_of']})"], env, checkout)
+                r = _run(["git", "push", "origin", "HEAD:main"], env, checkout)
     if r.returncode != 0:
         print(f"push failed: {(r.stderr or r.stdout).strip()[:300]}", file=sys.stderr)
         return 1
