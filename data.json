@@ -8,7 +8,7 @@
   "as_of": "2026-11-25",
   "day_of": 65,
   "total_days": 1095,
-  "generated_at": "2026-11-25T23:12:26Z",
+  "generated_at": "2026-11-25T23:24:59Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both ahead of BTC",
  "scoreboard": {
   "btc": {
-   "price": 60057.0,
-   "ret_pct": -26.01
+   "price": 60184.0,
+   "ret_pct": -25.85
   },
   "qqq": {
    "price": 638.1,
    "ret_pct": -13.94,
-   "behind_btc_pct": 12.07
+   "behind_btc_pct": 11.91
   },
   "ai": {
    "ret_pct": -19.02,
-   "behind_btc_pct": 6.99,
+   "behind_btc_pct": 6.84,
    "basket": [
     "NVDA",
     "MSFT",
@@ -58,7 +58,7 @@
   "mags": {
    "price": 65.75,
    "ret_pct": -9.89,
-   "behind_btc_pct": 16.12
+   "behind_btc_pct": 15.96
   }
  },
  "bets": {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 52.4% below $126,080 · 300 days left",
+    "note": "BTC 52.3% below $126,080 · 300 days left",
     "leg": null
    },
    {
@@ -122,9 +122,9 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 60057.0,
-  "below_pct": 52.37,
-  "below_usd": 66023.0,
+  "btc": 60184.0,
+  "below_pct": 52.27,
+  "below_usd": 65896.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
@@ -133,8 +133,8 @@
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 60057.0,
-  "above_pct": 5.4,
+  "btc": 60184.0,
+  "above_pct": 5.6,
   "days_left": 336
  },
  "cpi": {
@@ -278,7 +278,7 @@
    -25.931,
    -24.636,
    -24.568,
-   -25.978
+   -25.85
   ],
   "qqq": [
    0.0,
