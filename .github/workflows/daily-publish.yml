@@ -1,20 +1,32 @@
-name: daily-publish
+name: daily-verify
+
+# VERIFY ONLY. This workflow no longer publishes.
+#
+# Why (2026-11-25): two publishers (this schedule and the local guarded cron on the Umbrel) both
+# committed data.json to main, forked their histories, and the local push was rejected every day
+# from 2026-11-12 while this workflow kept succeeding. One writer, one history: the Umbrel cron
+# (job 2d63da4d0d91, 21:15 UTC) is the only publisher, and this job is the independent daily check
+# that the feed still produces a publishable, renderable payload.
+#
+# It runs the real publisher with DRY_RUN=1: fetch, guard, build data.json, run the page's own
+# drawChart() render proof, write og.png. No commit, no push, contents: read.
 
 on:
   schedule:
-    # 13:50 UTC daily (7:50 AM Utah) — after the local monitor's own run.
+    # 13:50 UTC daily (7:50 AM Utah), 8 hours before the local publish, so a broken feed is
+    # known before the writer runs.
     - cron: '50 13 * * *'
   workflow_dispatch: {}   # manual trigger from the Actions tab
 
 permissions:
-  contents: write         # push data.json back to main
+  contents: read
 
 concurrency:
-  group: daily-publish
+  group: daily-verify
   cancel-in-progress: false
 
 jobs:
-  publish:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,7 +44,12 @@ jobs:
       - name: Install Pillow
         run: python -m pip install --quiet pillow
 
-      - name: Generate and push data.json + og.png
+      - name: Verify payload, guard and chart render (no publish)
         run: python scripts/jason_web_publish.py
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: '1'
+          PUBLISH_GUARD_STATUS: ${{ github.workspace }}/publish-guard.json
+
+      - name: Show guard status
+        if: always()
+        run: cat publish-guard.json || true
