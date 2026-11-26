@@ -5,10 +5,10 @@
   "tweet_url": "https://x.com/Jason/status/2102051827671871601",
   "tweet2_url": "https://x.com/jason/status/2114956980674605075",
   "ref_url": "https://x.com/AlexesNakamoto/status/2115053956355231814",
-  "as_of": "2026-11-25",
-  "day_of": 65,
+  "as_of": "2026-11-26",
+  "day_of": 66,
   "total_days": 1095,
-  "generated_at": "2026-11-25T23:24:59Z",
+  "generated_at": "2026-11-26T21:16:31Z",
   "baselines": {
    "QQQ": 741.47,
    "BTC": 81169.04,
@@ -21,17 +21,17 @@
  "standing": "both ahead of BTC",
  "scoreboard": {
   "btc": {
-   "price": 60184.0,
-   "ret_pct": -25.85
+   "price": 60750.0,
+   "ret_pct": -25.16
   },
   "qqq": {
-   "price": 638.1,
-   "ret_pct": -13.94,
-   "behind_btc_pct": 11.91
+   "price": 633.93,
+   "ret_pct": -14.5,
+   "behind_btc_pct": 10.65
   },
   "ai": {
-   "ret_pct": -19.02,
-   "behind_btc_pct": 6.84,
+   "ret_pct": -19.89,
+   "behind_btc_pct": 5.27,
    "basket": [
     "NVDA",
     "MSFT",
@@ -44,21 +44,21 @@
     "SPCX"
    ],
    "parts": {
-    "NVDA": -31.665,
-    "MSFT": -0.898,
-    "GOOGL": -21.388,
-    "AMZN": -2.383,
-    "META": -20.429,
-    "AVGO": -16.98,
-    "AMD": -32.858,
-    "TSM": -21.553,
-    "SPCX": -17.149
+    "NVDA": -34.339,
+    "MSFT": -2.136,
+    "GOOGL": -23.064,
+    "AMZN": -5.425,
+    "META": -17.721,
+    "AVGO": -17.041,
+    "AMD": -34.035,
+    "TSM": -23.094,
+    "SPCX": -16.075
    }
   },
   "mags": {
-   "price": 65.75,
-   "ret_pct": -9.89,
-   "behind_btc_pct": 15.96
+   "price": 65.06,
+   "ret_pct": -10.84,
+   "behind_btc_pct": 14.32
   }
  },
  "bets": {
@@ -99,7 +99,7 @@
     "kind": "ath",
     "resolves": "2027-09-21",
     "status": "open",
-    "note": "BTC 52.3% below $126,080 · 300 days left",
+    "note": "BTC 51.8% below $126,080 · 299 days left",
     "leg": null
    },
    {
@@ -122,20 +122,20 @@
  },
  "record_high": {
   "ath": 126080.0,
-  "btc": 60184.0,
-  "below_pct": 52.27,
-  "below_usd": 65896.0,
+  "btc": 60750.0,
+  "below_pct": 51.82,
+  "below_usd": 65330.0,
   "peak_since": {
    "date": "2026-09-23",
    "high": 87274.4
   },
-  "days_left": 300
+  "days_left": 299
  },
  "test_57k": {
   "threshold": 57000.0,
-  "btc": 60184.0,
-  "above_pct": 5.6,
-  "days_left": 336
+  "btc": 60750.0,
+  "above_pct": 6.6,
+  "days_left": 335
  },
  "cpi": {
   "yoy_pct": 0,
@@ -210,7 +210,8 @@
    "2026-11-22",
    "2026-11-23",
    "2026-11-24",
-   "2026-11-25"
+   "2026-11-25",
+   "2026-11-26"
   ],
   "btc": [
    -0.0,
@@ -278,7 +279,8 @@
    -25.931,
    -24.636,
    -24.568,
-   -25.85
+   -26.377,
+   -25.156
   ],
   "qqq": [
    0.0,
@@ -346,6 +348,7 @@
    null,
    -12.197,
    -13.941,
+   -14.504,
    null
   ],
   "ai": [
@@ -414,6 +417,7 @@
    null,
    -16.093,
    -19.035,
+   -19.908,
    null
   ]
  },
